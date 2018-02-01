@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+# Written by Thomas York
+
+# Imports
+import os
+
+# Setup
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+
+# Flask configuration
+class Config(object):
+    # Application security key
+    ## CHANGE THIS IMMEDIATELY!
+    SECRET_KEY = 'please-change-me'
+
+    # SQLite DB location
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, '..', 'db',
+                                                                                            'auth.sqlite3')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Video window type
+    ## Valid options are mjpeg or rmtp
+    video_type = 'mjpeg'
+
+    # URL for video source
+    video_url = ''
