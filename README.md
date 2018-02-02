@@ -1,4 +1,4 @@
-# FlaMo
+# FlaMoS
 
 Working features at the moment:
  - Access control with password
@@ -7,11 +7,19 @@ Working features at the moment:
  - Set and monitor temperatures
  - Only Flashforge Dreamer printer supported by USB vendorid and deviceid
 
+Forked feature goals
+ - Embedded HTML5 player for RMTP
+ - Seperate admin and read-only interfaces
+ - Move to scalable model using daemon + ZeroMQ
+ - Play real Dreamer audio files when corresponding event happens
+ - Upload job file via HTTP
+ - Move USBID to config file
+ 
+
 # Installation
 
 Not yet :)
 
 # Development
 
- - Install all dependencies with pip install -r requirements.txt
- - Start flamo with python3 flamo.py
+Coming soon
