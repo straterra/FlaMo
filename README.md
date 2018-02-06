@@ -14,10 +14,15 @@ Forked feature goals
  - Play real Dreamer audio files when corresponding event happens
  - Upload job file via HTTP
  - Move USBID to config files
+ - Better deployment strategy (and instructions!)
 
 # Installation
 
-Not yet :)
+1. Run the daemon process first (flamosd.py)
+2. Run the Flask process second (flamos.py)
+3. Configure your favorite webserver to proxy requests (default listening on 0.0.0.0/5002)
+4. Use db/add-user.py script to add an admin user for r/w control
+
 
 # Development
 
