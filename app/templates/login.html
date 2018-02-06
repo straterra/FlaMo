@@ -1,6 +1,20 @@
 {% block body %}
 {% if session['logged_in'] %}
-<p>You're logged in already!</p>
+<!DOCTYPE HTML>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="0; url=/">
+        <script type="text/javascript">
+            window.location.href = "/"
+        </script>
+        <title>FlaMoS - Loginn</title>
+    </head>
+    <body>
+        <!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->
+        If you are not redirected automatically, follow this <a href='/'>link</a>.
+    </body>
+</html>
 {% else %}
 <!doctype html>
 

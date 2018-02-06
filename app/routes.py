@@ -3,23 +3,67 @@
 # Written by Thomas York
 
 # Imports
+import eventlet
+
+eventlet.monkey_patch()
 from app import app
 from app import hashing
 from flask import Flask
 from flask import Flask, flash, redirect, render_template, request, session, abort
+from flask import copy_current_request_context
 from sqlalchemy.orm import sessionmaker
 from flask_hashing import Hashing
-from app.tabledef import *
 import os
+import time
+from queue import Queue
+from threading import Thread
+import flask
+from flask import Flask, render_template, request
+from app.tabledef import *
+from time import sleep
+import zmq
+
+# Setup ZMQ sockets
+contextCommand = zmq.Context()
+socketCommand = contextCommand.socket(zmq.PUB)
+socketCommand.connect('tcp://127.0.0.1:5557')
+
+
+# Thread for processing ZeroMQ messages
+def StreamQueueImporter():
+    print('Thread started')
+    context = zmq.Context()
+
+    socket = context.socket(zmq.SUB)
+    socket.connect('tcp://127.0.0.1:5556')
+    socket.setsockopt(zmq.SUBSCRIBE, b'')
+    while True:
+        stream = socket.recv_string()
+        socketio.emit('terminal', stream, broadcast=True)
+        eventlet.sleep(0)
+
+
+# SocketIO
+@socketio.on('gcodecmd')
+def socketio_machine_state(cmd):
+    if not cmd == "M105":
+        if session.get('logged_in'):
+            print('LALA {0}'.format(cmd))
+            socketCommand.send_string(str(cmd))
 
 
 # Routes
-@app.route('/')
-def home():
+@app.route('/', methods=['GET'])
+def flamos():
+    return render_template('index.html', streamurl=app.config['VIDEO_URL'])
+
+
+@app.route('/admin', methods=['GET'])
+def admin():
     if not session.get('logged_in'):
         return redirect('/login')
     else:
-        return "Hello Boss!<br \><br \><a href=\"/logout\">Logout</a>"
+        return render_template('admin.html', streamurl=app.config['VIDEO_URL'])
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -37,7 +81,7 @@ def login():
 
         if hashing.check_value(passwd, POST_PASSWORD, salt=app.config['SECRET_KEY']):
             session['logged_in'] = True
-            return redirect('/')
+            return redirect('/admin')
         else:
             flash('wrong password!')
             return redirect('/login')
@@ -48,4 +92,7 @@ def login():
 @app.route("/logout")
 def logout():
     session['logged_in'] = False
-    return home()
+    return redirect('/')
+
+
+eventlet.spawn(StreamQueueImporter)

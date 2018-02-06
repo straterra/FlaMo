@@ -73,6 +73,16 @@ function refresh_temps() {
 				//don't send form to server
 				e.preventDefault();
 				
+				//set tool or bed temperature
+				var form = $(this).parents('form:first');
+				temp_title = e.target.attributes.id.value.replace('tempform_', '');
+				socket.emit(
+					'gcodecmd',
+					temp_title == 'B' ?
+					'M140 S'+ $('#tempset_' + temp_title).val() :
+					'M104 S' + $('#tempset_' + temp_title).val() + ' ' + temp_title
+				);
+				
 			});
 		}
 		

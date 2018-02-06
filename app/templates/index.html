@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="google" value="notranslate">
 
-	<title>FlaMo</title>
+	<title>FlaMoS</title>
 
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
 
@@ -30,14 +30,21 @@
 <body class="bootcards-nofooter">
 	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="container">
-			<a class="navbar-brand" href="/">FlaMo</a>
+			<a class="navbar-brand" href="/">FlaMoS</a>
 			<div class="navbar-collapse collapse pull-right">
 				<ul class="nav navbar-nav">
 					<li class="active">
-						<a href="/logout">
-							<i class="fa fa-sign-out"></i>
-							Logout
-						</a>
+{% if session['logged_in'] %}
+                                                <a href="/logout">
+                                                        <i class="fa fa-sign-out"></i>
+                                                        Logout
+                                                </a>
+{% else %}
+                                                <a href="/login">
+                                                        <i class="fa fa-sign-out"></i>
+                                                        Login
+                                                </a>
+{% endif %}
 					</li>
 				</ul>
 			</div>
@@ -78,165 +85,6 @@
 			
 			</div>
 			<div class="col-sm-7 bootcards-cads">
-				<!-- CARD: Control -->
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<h3 class="panel-title">Control</h3>
-					</div>
-					<div class="modal-body">
-						<table class="controlpanel">
-							<tr>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td>Y</td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td colspan="4" rowspan="4" id="emebutton-container">
-									<button id="emebutton" class="btn btn-danger">EMERGENCY<br>STOP</button>
-								</td>
-								<td><button id="move_y_up_100" class="btn btn-default">+100</button></td>
-								<td rowspan="4" colspan="4">
-									<div class="btn-group">
-										<button id="move_y_up" class="btn btn-default">Ena Motors</button>
-										<button id="move_y_up" class="btn btn-default">Dis Motors</button>
-									</div>
-									<div class="btn-group">
-										<button id="move_y_up" class="btn btn-default">Enable Fan</button>
-										<button id="move_y_up" class="btn btn-default">Disable Fan</button>
-									</div>
-									<div class="row">
-										Set LEDs: <input type='text' id="ledcolor"/>
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><button id="move_y_up_10" class="btn btn-default">+10</button></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><button id="move_y_up_1" class="btn btn-default">+1</button></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><button id="move_y_up_01" class="btn btn-default">+0.1</button></td>
-							</tr>
-							<tr>
-								<td>X</td>
-								<td><button id="move_x_down_100" class="btn btn-default">-100</button></td>
-								<td><button id="move_x_down_10" class="btn btn-default">-10</button></td>
-								<td><button id="move_x_down_1" class="btn btn-default">-1</button></td></td>
-								<td><button id="move_x_down_01" class="btn btn-default">-0.1</button></td>
-								<td><button id="move_xy_home" class="btn btn-default"><i class="fa fa-home" aria-hidden="true"></i></button></td>
-								<td><button id="move_x_up_01" class="btn btn-default">+0.1</button></td>
-								<td><button id="move_x_up_1" class="btn btn-default">+1</button></td></td>
-								<td><button id="move_x_up_10" class="btn btn-default">+10</button></td>
-								<td><button id="move_x_up_100" class="btn btn-default">+100</button></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td colspan="4" rowspan="4">
-									<table class="controlpanel">
-										<tr>
-											<td colspan="3"></td>
-										</tr>
-										<tr>
-											<td><button id="move_z_up_100" class="btn btn-default">+100</button></td>
-											<td rowspan="4"><button id="move_z_home" class="btn btn-default"><i class="fa fa-home" aria-hidden="true"></i></button></td>
-											<td><button id="move_z_down_01" class="btn btn-default">-0.1</button></td>
-										</tr>
-										<tr>
-											<td><button id="move_z_up_10" class="btn btn-default">+10</button></td>
-											<td><button id="move_z_down_1" class="btn btn-default">-1</button></td>
-										</tr>
-										<tr>
-											<td><button id="move_z_up_1" class="btn btn-default">+1</button></td>
-											<td><button id="move_z_down_10" class="btn btn-default">-10</button></td>
-										</tr>
-										<tr>
-											<td><button id="move_z_up_01" class="btn btn-default">+0.1</button></td>
-											<td><button id="move_z_down_100" class="btn btn-default">-100</button></td>
-										</tr>
-										<tr>
-											<td colspan="3">
-												Z
-											</td>
-										</tr>
-									</table>
-								</td>
-								<td><button id="move_y_up" class="btn btn-default">-0.1</button></td>
-								<td colspan="4" rowspan="4">
-									<table class="controlpanel pull-right">
-										<tr>
-											<td colspan="2"></td>
-										</tr>
-										<tr>
-											<td><button id="move_e_up_100" class="btn btn-default">+100</button></td>
-											<td><button id="move_e_down_01" class="btn btn-default">-0.1</button></td>
-										</tr>
-										<tr>
-											<td><button id="move_e_up_10" class="btn btn-default">+10</button></td>
-											<td><button id="move_e_down_1" class="btn btn-default">-1</button></td>
-										</tr>
-										<tr>
-											<td><button id="move_e_up_1" class="btn btn-default">+1</button></td>
-											<td><button id="move_e_down10" class="btn btn-default">-10</button></td>
-										</tr>
-										<tr>
-											<td><button id="move_e_up_01" class="btn btn-default">+0.1</button></td>
-											<td><button id="move_e_down_100" class="btn btn-default">-100</button></td>
-										</tr>
-										<tr>
-											<td colspan="2">
-												Extrude
-											</td>
-										</tr>
-									</table>
-								</td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><button id="move_y_up" class="btn btn-default">-1</button></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><button id="move_y_up" class="btn btn-default">-10</button></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><button id="move_y_up" class="btn btn-default">-100</button></td>
-							</tr>
-						</table>
-					</div>
-					<div class="panel-footer">
-						<div class="row">
-							<div class="col-xs-4">
-								X/Y
-								<input class="form-control speed-control" id="speed_xy" type="text" value="1800">
-							</div>
-							<div class="col-xs-4">
-								Z
-								<input class="form-control speed-control" id="speed_z" type="text" value="1200">
-							</div>
-							<div class="col-xs-4">
-								Extruder
-								<input class="form-control speed-control" id="speed_ext" type="text" value="240">
-							</div>
-						</div>
-						<div class="row">
-							<hr style="margin: 0.2em;">
-							<center><i>Speeds (mm/min)</i></center>
-						</div>
-					</div>
-				</div>
 				
 				<!-- CARD: Temperatures -->
 				<div class="panel panel-default">
@@ -260,20 +108,6 @@
 										<textarea class="form-control" rows="6" id="terminal" readonly="readonly"></textarea>
 									</div>
 								</div>
-						</div>
-						<div class="panel-footer">
-							<div class="form-group">
-								<label class="col-xs-3 control-label">Command:</label>
-								<div class="col-xs-6">
-									<input type="text" class="form-control" value="M119" id="gcode_cmd">
-								</div>
-								<div class="col-xs-3">
-									<button tyoe="submit" class="btn btn-default">
-										<i class="fa fa-envelope"></i>
-										Send
-									</button>
-								</div>
-							</div>
 						</div>
 					</form>
 				</div>
@@ -326,6 +160,5 @@
     <script src="static/js/flashforge.js"></script>
     <script src="static/js/temp.js"></script>
     <script src="static/js/main.js"></script>
-    <script src="static/js/controls.js"></script>
   </body>
 </html>
