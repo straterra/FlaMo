@@ -16,6 +16,15 @@ Forked feature goals
  - Move USBID to config file
 
 
+Forked feature goals
+ - Embedded HTML5 player for RMTP
+ - Seperate admin and read-only interfaces
+ - Move to scalable model using daemon + ZeroMQ
+ - Play real Dreamer audio files when corresponding event happens
+ - Upload job file via HTTP
+ - Move USBID to config file
+ 
+
 # Installation
 
 Not yet :)
