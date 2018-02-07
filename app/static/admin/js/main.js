@@ -28,7 +28,11 @@ var machine_state_uimap = {
 socket.on('terminal', function(data) {
 	$('#terminal').text($('#terminal').text() + data);
 	$('#terminal').scrollTop($('#terminal')[0].scrollHeight);
-	
+
+	if ($('#terminal').val().length > 10000) {
+        $('#terminal').text('');
+     }
+
 	if (data.startsWith('< ')) {
 		//update ui if neccessary
 		command = flashforge.parse_data(data.substr(2));
