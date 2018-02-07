@@ -29,9 +29,11 @@ socket.on('terminal', function(data) {
 	$('#terminal').text($('#terminal').text() + data);
 	$('#terminal').scrollTop($('#terminal')[0].scrollHeight);
 
-	if ($('#terminal').val().length > 10000) {
-        $('#terminal').text('');
-     }
+        if ($('#terminal').val().length > 10000) {
+                var cuttext = $('#terminal').text();
+                $('#terminal').text(cuttext.substr(5000));
+        }
+
 
 	if (data.startsWith('< ')) {
 		//update ui if neccessary
@@ -60,4 +62,21 @@ $('#gcode_cmd_form').submit(function(e) {
 	
 	//don't send form to server
 	e.preventDefault();
+});
+
+
+$(function() {
+
+  var checkbox = $("#trigger");
+  var hidden = $('#terminal');
+
+  hidden.show();
+
+  checkbox.change(function() {
+    if (checkbox.is(':checked')) {
+      hidden.hide();
+    } else {
+      hidden.show();
+    }
+  });
 });
