@@ -14,7 +14,8 @@ import os
 import getpass
 
 # Setup
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+basedir = os.path.abspath(os.path.dirname(__file__))
+engine = create_engine('sqlite:///' + os.path.join(basedir, 'db', 'auth.sqlite3'), echo=True)
 
 # Ask user for information
 user = input("Username:")
