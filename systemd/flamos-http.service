@@ -1,0 +1,11 @@
+[Unit]
+Description=FlaMoS HTTP Daemon
+After=multi-user.target
+
+[Service]
+Type=idle
+WorkingDirectory=/home/flamos/FlaMoS
+ExecStart=/home/flamos/venv/bin/python3 flamos.py
+
+[Install]
+WantedBy=multi-user.target
