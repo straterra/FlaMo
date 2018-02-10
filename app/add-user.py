@@ -14,7 +14,7 @@ import os
 import getpass
 
 # Setup
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI']), echo=True)
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
 
 # Ask user for information
 user = input("Username:")
