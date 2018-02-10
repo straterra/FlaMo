@@ -18,10 +18,28 @@ Forked feature goals
 
 # Installation
 
-1. Run the daemon process first (flamosd.py)
-2. Run the Flask process second (flamos.py)
-3. Configure your favorite webserver to proxy requests (default listening on 0.0.0.0/5002)
-4. Use db/add-user.py script to add an admin user for r/w control
+1. Configure your favorite webserver to proxy requests (default listening on 0.0.0.0/5002)
+2. sudo adduser flamos
+3. sudo passwd -l flamos
+4. sudo apt-get install -y python3-venv
+5. sudo su - flamos
+6. git clone https://github.com/straterra/FlaMoS.git
+7. pyvenv-3.5 venv
+8. source venv/bin/activate
+9. pip3 install -r FlaMoS/requirements.txt
+10. cp FlaMoS/app/config.py.dist FlaMoS/app/config.py
+11. vim FlaMoS/app/config.py
+12. cd FlaMoS
+13. mkdir db
+14. python3 add-user.py
+15. exit
+16. sudo cp FlaMoS/systemd/*.service /lib/systemd/system/
+17. sudo chmod 644 /lib/systemd/system/flamos*.service
+18. sudo systemctl daemon-reload
+19. sudo systemctl start flamos
+20. sudo systemctl status flamos
+21. sudo systemctl start flamos-http
+22. sudo systemctl status flamos-http
 
 
 # Development
