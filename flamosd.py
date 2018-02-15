@@ -131,7 +131,7 @@ class CommandProcessor(Thread):
                     StreamQueue.put("< PONG\n")
                 elif command == "FLAMOSUPSSTATUS":
                     try:
-                        upsdata = self.upsclient.list_vars("850va")
+                        upsdata = self.upsclient.list_vars(Config('nut_ups_name'))
                         data = "CMD FLAMOSUPSSTATUS Received.\n"
                         data += "Charge: " + upsdata['battery.charge'] + "\n"
                         data += "Model: " + upsdata['device.model'] + "\n"
