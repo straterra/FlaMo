@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+# flamosd-config.py
+
+# Written by Thomas York
+
+
+# Enable UPS (NUT) support
+enable_nut = 'yes'
+nut_ups_name = '850va'
+
+# Enable OpenHAB support
+enable_openhab = 'yes'

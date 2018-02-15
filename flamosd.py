@@ -13,7 +13,7 @@ from threading import Thread
 from logging.handlers import RotatingFileHandler
 from flashforge import FlashForge, FlashForgeError
 from nut2 import PyNUTClient
-from app.config import Config
+import flamosconfig
 
 # Thread definitions
 ## Stream Queue Exporter
@@ -101,10 +101,10 @@ class CommandProcessor(Thread):
     def run(self):
         logger.info('[CommandProcessor] started')
         self.ff = FlashForge()
-        if Config('enable_nut') == "yes":
+        if flamosdconfig.enable_nut == "yes":
             self.upsclient = PyNUTClient()
             logger.info('[CommandProcessor] NUT support enabled')
-        if Config('enable_openhab') == "yes":
+        if flamosdconfig.enable_openhab == "yes":
             logger.info('[CommandProcessor] OpenHAB support enabled')
 
         while True:
@@ -128,10 +128,14 @@ class CommandProcessor(Thread):
 
             else:
                 if command == "FLAMOSPING\n":
-                    StreamQueue.put("< PONG\n")
-                elif command == "FLAMOSUPSSTATUS":
+                    data = "CMD FLAMOSPING Received.\n"
+                    data += "CommandProcessor Pong\n"
+                    data += "ok\n"
+                    StreamQueue.put('<' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSUPSSTATUS\n":
                     try:
-                        upsdata = self.upsclient.list_vars(Config('nut_ups_name'))
+                        upsdata = self.upsclient.list_vars(flamosdconfig.nut_ups_name)
                         data = "CMD FLAMOSUPSSTATUS Received.\n"
                         data += "Charge: " + upsdata['battery.charge'] + "\n"
                         data += "Model: " + upsdata['device.model'] + "\n"

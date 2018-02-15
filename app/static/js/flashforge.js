@@ -15,7 +15,7 @@ var flashforge = new function() {
 		sdcard: {progress: 0},
 		tempdatapoints: {},
 		targetdatapoints: {},
-		tempdata: {}
+		tempdata: {},
 		upscharge: 0,
 		upsmodel: null,
 		upsinputvoltage: null,
