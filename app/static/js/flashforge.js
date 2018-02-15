@@ -16,6 +16,14 @@ var flashforge = new function() {
 		tempdatapoints: {},
 		targetdatapoints: {},
 		tempdata: {}
+		upscharge: 0,
+		upsmodel: null,
+		upsinputvoltage: null,
+		upsload: 0,
+		upsstatus: null,
+		powerfeed: null,
+		alarmsmoke: null,
+		alarmco: null
 	};
 	
 	this.parse_data = function(data) {
@@ -27,6 +35,13 @@ var flashforge = new function() {
 		var command = match[1];
 		
 		switch (command) {
+		    // UPS Status information
+		    case 'FLAMOSUPSSTATUS':
+		        this.machine.upscharge = lines[1].substr(8).trim();
+		        this.machine.upsmodel = lines[2].substr(7).trim();
+		        this.machine.upsinputvoltage = lines[3].substr(14).trim();
+		        this.machine.upsload = lines[4].substr(6).trim();
+		        this.machine.upsstatus = lines[5].substr(8).trim();
 			//Machine information
 			case 'M115':
 				this.machine.type = lines[1].substr(14).trim();

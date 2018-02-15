@@ -26,3 +26,10 @@ class Config(object):
 
     # URL for video source
     video_url = ''
+
+    # Enable UPS (NUT) support
+    enable_nut = 'yes'
+    nut_ups_name = '850va'
+
+    # Enable OpenHAB support
+    enable_openhab = 'yes'

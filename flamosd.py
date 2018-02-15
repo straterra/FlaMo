@@ -12,7 +12,8 @@ from queue import Queue
 from threading import Thread
 from logging.handlers import RotatingFileHandler
 from flashforge import FlashForge, FlashForgeError
-
+from nut2 import PyNUTClient
+from app.config import Config
 
 # Thread definitions
 ## Stream Queue Exporter
@@ -62,17 +63,32 @@ class PeriodicCommandScheduler(Thread):
         Thread.__init__(self)
 
     def run(self):
-        logger.info('[PeriodicCommandScheduler] started')
-        tempQueue = Queue()
-        tempQueue.put('Dummy')
+        logger.info('[PeriodicCommandScheduler500ms] started')
         while True:
-            logger.info('[PeriodicCommandScheduler] Adding Dreamer status codes to queue')
+            logger.info('[PeriodicCommandScheduler500ms] Adding Dreamer status codes to queue')
             CommandQueue.put('M115')
             CommandQueue.put('M119')
             CommandQueue.put('M105')
             CommandQueue.put('M27')
             # CommandQueue.put('FLAMOSPING')
             time.sleep(.5)
+
+
+## Periodic Command Scheduler 5000ms
+class PeriodicCommandScheduler5000ms(Thread):
+    _instance = None
+
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        logger.info('[PeriodicCommandScheduler5000ms] started')
+        while True:
+            logger.info('[PeriodicCommandScheduler5000ms] Adding UPS status code to queue')
+            CommandQueue.put('FLAMOSUPSSTATUS')
+            logger.info('[PeriodicCommandScheduler5000ms] Adding FLAMOS Ping code to queue')
+            CommandQueue.put('FLAMOSPING')
+            time.sleep(5)
 
 
 ## Command Processor
@@ -85,6 +101,11 @@ class CommandProcessor(Thread):
     def run(self):
         logger.info('[CommandProcessor] started')
         self.ff = FlashForge()
+        if Config('enable_nut') == "yes":
+            self.upsclient = PyNUTClient()
+            logger.info('[CommandProcessor] NUT support enabled')
+        if Config('enable_openhab') == "yes":
+            logger.info('[CommandProcessor] OpenHAB support enabled')
 
         while True:
             command = CommandQueue.get()
@@ -108,6 +129,27 @@ class CommandProcessor(Thread):
             else:
                 if command == "FLAMOSPING\n":
                     StreamQueue.put("< PONG\n")
+                elif command == "FLAMOSUPSSTATUS":
+                    try:
+                        upsdata = self.upsclient.list_vars("850va")
+                        data = "CMD FLAMOSUPSSTATUS Received.\n"
+                        data += "Charge: " + upsdata['battery.charge'] + "\n"
+                        data += "Model: " + upsdata['device.model'] + "\n"
+                        data += "InputVoltage: " + upsdata['input.voltage'] + "\n"
+                        data += "Load: " + upsdata['ups.load'] + "\n"
+                        if upsdata['ups.status'] == "OL":
+                            data += "Status: Utility\n"
+                        elif upsdata['ups.status'] == "OB DISCHRG":
+                            data += "Status: Battery\n"
+                        else:
+                            data += "Status: Unknown\n"
+                        data += "ok\n"
+                        StreamQueue.put('< ' + data)
+                        CommandQueue.task_done()
+                    except Error as error:
+                        logger.error(error.message)
+                        StreamQueue.put('CommandProcessor UPS ERROR: {0}'.format(error.message))
+                        CommandQueue.task_done()
 
 
 # Main Thread Code
@@ -139,6 +181,10 @@ def main():
     PeriodicCommandScheduler._instance = PeriodicCommandScheduler()
     PeriodicCommandScheduler._instance.start()
 
+    ## Period Command Scheduler5000ms
+    PeriodicCommandScheduler5000ms._instance = PeriodicCommandScheduler5000ms()
+    PeriodicCommandScheduler5000ms._instance.start()
+
     ## Command Processor
     CommandProcessor._instance = CommandProcessor()
     CommandProcessor._instance.start()
@@ -159,6 +205,11 @@ def main():
             PeriodicCommandScheduler._instance = PeriodicCommandScheduler()
             PeriodicCommandScheduler._instance.start()
             logger.warning('[Main] PeriodicCommandScheduler was found dead and restarted')
+
+        if PeriodicCommandScheduler5000ms._instance is None:
+            PeriodicCommandScheduler5000ms._instance = PeriodicCommandScheduler5000ms()
+            PeriodicCommandScheduler5000ms._instance.start()
+            logger.warning('[Main] PeriodicCommandScheduler5000ms was found dead and restarted')
 
         if CommandProcessor._instance is None:
             CommandProcessor._instance = CommandProcessor()
