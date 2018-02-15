@@ -30,7 +30,7 @@ var flashforge = new function() {
 		var lines = data.match(/^.*(\n+|$)/gm);
 		
 		//Command Recevied must be in frist line
-		var match = /^CMD ([MG]\d+) Received\.\n$/.exec(lines[0]);
+		var match = /^CMD (.*) Received\.\n$/.exec(lines[0]);
 		if (match === null) return; //just quit if not a command message.
 		var command = match[1];
 		
@@ -42,6 +42,7 @@ var flashforge = new function() {
 		        this.machine.upsinputvoltage = lines[3].substr(14).trim();
 		        this.machine.upsload = lines[4].substr(6).trim();
 		        this.machine.upsstatus = lines[5].substr(8).trim();
+		        break;
 			//Machine information
 			case 'M115':
 				this.machine.type = lines[1].substr(14).trim();
