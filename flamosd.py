@@ -13,7 +13,7 @@ from threading import Thread
 from logging.handlers import RotatingFileHandler
 from flashforge import FlashForge, FlashForgeError
 from nut2 import PyNUTClient
-import flamosconfig
+import flamosdconfig
 
 # Thread definitions
 ## Stream Queue Exporter
