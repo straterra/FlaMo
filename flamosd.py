@@ -140,7 +140,7 @@ class CommandProcessor(Thread):
                         data += "Charge: " + upsdata['battery.charge'] + "\n"
                         data += "Model: " + upsdata['device.model'] + "\n"
                         data += "InputVoltage: " + upsdata['input.voltage'] + "\n"
-                        data += "Load: " + upsdata['ups.load'] + "\n"
+                        data += "Load: " + upsdata['ups.load'] + "%\n"
                         if upsdata['ups.status'] == "OL":
                             data += "Status: Utility\n"
                         elif upsdata['ups.status'] == "OB DISCHRG":
