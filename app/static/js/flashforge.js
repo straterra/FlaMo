@@ -19,7 +19,7 @@ var flashforge = new function() {
 		upscharge: 0,
 		upsmodel: null,
 		upsinputvoltage: null,
-		upsload: 0,
+		upsload: null,
 		upsstatus: null,
 		powerfeed: null,
 		alarmsmoke: null,
