@@ -100,7 +100,7 @@ class CommandProcessor(Thread):
 
     def run(self):
         logger.info('[CommandProcessor] started')
-        self.ff = FlashForge()
+            self.ff = None
         if flamosdconfig.enable_nut == "yes":
             self.upsclient = PyNUTClient()
             logger.info('[CommandProcessor] NUT support enabled')
@@ -114,9 +114,16 @@ class CommandProcessor(Thread):
             StreamQueue.put('> ' + command)
             logger.info('[CommandProcessor] Executing command: {0}'.format(command))
             if "FLAMOS" not in command:
+                if self.ff == None:
+                    try:
+                        self.ff = FlashForge()
+                    except:
+                        logger.error('[CommandProcessor] Error connecting to FlashForge Dreamer via USB')
+                        StreamQueue.put('< CMD ' + ' ERROR\nok\n')
+                        CommandQueue.task_done()
+                        break
                 try:
                     data = self.ff.gcodecmd(command)
-                    # data = 'CMD OK ' + command
                     if not data.endswith('\n'):
                         data += '\n'
                     StreamQueue.put('< ' + data)
@@ -125,7 +132,6 @@ class CommandProcessor(Thread):
                     logger.error(error.message)
                     StreamQueue.put('CommandProcessor ERROR: {0}'.format(error.message))
                     CommandQueue.task_done()
-
             else:
                 if command == "FLAMOSPING\n":
                     data = "CMD FLAMOSPING Received.\n"
