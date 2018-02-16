@@ -91,6 +91,14 @@ class PeriodicCommandScheduler5000ms(Thread):
                 CommandQueue.put('FLAMOSUPSSTATUS')
                 logger.info('[PeriodicCommandScheduler5000ms] Adding FLAMOS Ping code to queue')
                 CommandQueue.put('FLAMOSPING')
+                logger.info('[PeriodicCommandScheduler5000ms] Adding Smoke status code to queue')
+                CommandQueue.put('FLAMOSSMOKESTATUS')
+                logger.info('[PeriodicCommandScheduler5000ms] Adding CO status code to queue')
+                CommandQueue.put('FLAMOSCOSTATUS')
+                logger.info('[PeriodicCommandScheduler5000ms] Adding Power status code to queue')
+                CommandQueue.put('FLAMOSPOWERSTATUS')
+
+
             time.sleep(5)
 
 
