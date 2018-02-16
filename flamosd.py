@@ -216,7 +216,7 @@ class CommandProcessor(Thread):
                         data = "CMD FLAMOSPOWERONPROPER Received.\nDevice powered on\nok\n"
                     else:
                         data = "CMD FLAMOSPOWERONPROPER Received.\nRestAPI call failed\nok\n"
-                    time.sleep(5)
+                    time.sleep(30)
                     StreamQueue.put('< ' + data)
                     CommandQueueLockout = False
                     CommandQueue.task_done()
