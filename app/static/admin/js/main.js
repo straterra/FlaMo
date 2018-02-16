@@ -1,8 +1,13 @@
 var socket = io.connect();
 
-//var socket = io.connect('https://dreamer.fuhell.com')
-
-
+//refresh ups information
+function refresh_ups_information() {
+	$('#ups_model').text(flashforge.machine.upsmodel);
+	$('#ups_status').text(flashforge.machine.upsstatus);
+	$('#ups_charge').text(flashforge.machine.upscharge);
+	$('#ups_load').text(flashforge.machine.upsload);
+	$('#ups_inputvoltage').text(flashforge.machine.upsinputvoltage);
+}
 
 //refresh machine information
 function refresh_machine_information() {
@@ -39,14 +44,21 @@ socket.on('terminal', function(data) {
 		//update ui if neccessary
 		command = flashforge.parse_data(data.substr(2));
 		switch (command) {
-			case 'M115': refresh_machine_information(); break;
+			case 'M115':
+			    refresh_machine_information();
+			    break;
 			case 'M119':
 				refresh_machine_status();
 				break;
 			case 'M27':
 				refresh_machine_status();
 				break;
-			case 'M105': refresh_temps(); break;
+			case 'M105':
+			    refresh_temps();
+			    break;
+			case 'FLAMOSUPSSTATUS':
+			    refresh_ups_information();
+			    break;
 			default: break;
 		}
 	}
