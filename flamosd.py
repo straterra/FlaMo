@@ -119,7 +119,7 @@ class CommandProcessor(Thread):
                         self.ff = FlashForge()
                     except:
                         logger.error('[CommandProcessor] Error connecting to FlashForge Dreamer via USB')
-                        StreamQueue.put('< CMD ' + ' ERROR\nok\n')
+                        StreamQueue.put('< CMD ' + command + ' ERROR\nok\n')
                         CommandQueue.task_done()
                         continue
                 try:
