@@ -7,6 +7,14 @@ $('#ledcolor').spectrum({
 	}
 });
 
+$('#poweronbutton').click(function(){
+	socket.emit('gcodecmd', 'FLAMOSPOWERONPROPER');
+});
+
+$('#poweroffbutton').click(function(){
+	socket.emit('gcodecmd', 'FLAMOSPOWEROFFPROPER');
+});
+
 $('#move_xy_home').click(function(){
 	socket.emit('gcodecmd', 'G28 X Y');
 });
