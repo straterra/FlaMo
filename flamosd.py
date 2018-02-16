@@ -110,6 +110,7 @@ class CommandProcessor(Thread):
 
         while True:
             command = CommandQueue.get()
+            global CommandQueueLockout
             if not command.endswith('\n'):
                 command += '\n'
             StreamQueue.put('> ' + command)
@@ -175,9 +176,6 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueueLockout = True
                     CommandQueue.task_done()
-                    CommandQueue.clear()
-                    sleep(.3)
-                    CommandQueue.clear()
                 elif command == "FLAMOSCOMMANDQUEUELOCKOUTDISABLE\n":
                     data = "CMD FLAMOSCOMMANDQUEUELOCKOUTENABLE Received.\nCommandQueue lockout disabled\nok\n"
                     StreamQueue.put('< ' + data)
