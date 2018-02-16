@@ -218,6 +218,15 @@ class CommandProcessor(Thread):
                         data = "CMD FLAMOSPOWEROFF Received.\nRestAPI call failed\nok\n"
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
+                elif command == "FLAMOSPOWEROFFPROPER\n":
+                    CommandQueueLockout = True
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.openhabianpass))
+                    if r.status_code == requests.codes.ok:
+                        data = "CMD FLAMOSPOWEROFFPROPER Received.\nDevice powered off\nok\n"
+                    else:
+                        data = "CMD FLAMOSPOWEROFFPROPER Received.\nRestAPI call failed\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
                 elif command == "FLAMOSPOWERSTATUS\n":
                     r = requests.get(self.openhab_power_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
