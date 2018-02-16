@@ -35,6 +35,18 @@ var flashforge = new function() {
 		var command = match[1];
 		
 		switch (command) {
+		    // CO information
+		    case 'FLAMOSCOSTATUS':
+		        this.machine.powerfeed = lines[1].substr(10).trim();
+		        break;
+		    // Smoke information
+		    case 'FLAMOSSMOKESTATUS':
+		        this.machine.powerfeed = lines[1].substr(13).trim();
+		        break;
+		    // Machine power information
+		    case 'FLAMOSPOWERSTATUS':
+		        this.machine.powerfeed = lines[1].substr(13).trim();
+		        break;
 		    // UPS Status information
 		    case 'FLAMOSUPSSTATUS':
 		        this.machine.upscharge = lines[1].substr(8).trim();

@@ -1,5 +1,20 @@
 var socket = io.connect();
 
+//refresh openhab information - power
+function refresh_openhab_power_information() {
+	$('#machine_power').text(flashforge.machine.powerfeed);
+}
+
+//refresh openhab information - smoke
+function refresh_openhab_smoke_information() {
+	$('#alarm_smoke').text(flashforge.machine.alarmsmoke);
+}
+
+//refresh openhab information - co
+function refresh_openhab_co_information() {
+	$('#alarm_co').text(flashforge.machine.alarmco);
+}
+
 //refresh ups information
 function refresh_ups_information() {
 	$('#ups_model').text(flashforge.machine.upsmodel);
@@ -58,6 +73,15 @@ socket.on('terminal', function(data) {
 			    break;
 			case 'FLAMOSUPSSTATUS':
 			    refresh_ups_information();
+			    break;
+			case 'FLAMOSPOWERSTATUS':
+			    refresh_openhab_power_information();
+			    break;
+			case 'FLAMOSSMOKESTATUS':
+			    refresh_openhab_smoke_information();
+			    break;
+			case 'FLAMOSCOSTATUS':
+			    refresh_openhab_co_information();
 			    break;
 			default: break;
 		}
