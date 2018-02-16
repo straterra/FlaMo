@@ -65,12 +65,12 @@ class PeriodicCommandScheduler(Thread):
     def run(self):
         logger.info('[PeriodicCommandScheduler500ms] started')
         while True:
-            logger.info('[PeriodicCommandScheduler500ms] Adding Dreamer status codes to queue')
-            CommandQueue.put('M115')
-            CommandQueue.put('M119')
-            CommandQueue.put('M105')
-            CommandQueue.put('M27')
-            # CommandQueue.put('FLAMOSPING')
+            if CommandQueueLockout is False:
+                logger.info('[PeriodicCommandScheduler500ms] Adding Dreamer status codes to queue')
+                CommandQueue.put('M115')
+                CommandQueue.put('M119')
+                CommandQueue.put('M105')
+                CommandQueue.put('M27')
             time.sleep(.5)
 
 
@@ -84,10 +84,11 @@ class PeriodicCommandScheduler5000ms(Thread):
     def run(self):
         logger.info('[PeriodicCommandScheduler5000ms] started')
         while True:
-            logger.info('[PeriodicCommandScheduler5000ms] Adding UPS status code to queue')
-            CommandQueue.put('FLAMOSUPSSTATUS')
-            logger.info('[PeriodicCommandScheduler5000ms] Adding FLAMOS Ping code to queue')
-            CommandQueue.put('FLAMOSPING')
+            if CommandQueueLockout is False:
+                logger.info('[PeriodicCommandScheduler5000ms] Adding UPS status code to queue')
+                CommandQueue.put('FLAMOSUPSSTATUS')
+                logger.info('[PeriodicCommandScheduler5000ms] Adding FLAMOS Ping code to queue')
+                CommandQueue.put('FLAMOSPING')
             time.sleep(5)
 
 
@@ -114,6 +115,11 @@ class CommandProcessor(Thread):
             StreamQueue.put('> ' + command)
             logger.info('[CommandProcessor] Executing command: {0}'.format(command))
             if "FLAMOS" not in command:
+                if CommandQueueLockout is True:
+                    StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nCommandQueue lockout enabled\nok\n')
+                    CommandQueue.task_done()
+                    continue
+
                 if self.ff == None:
                     try:
                         self.ff = FlashForge()
@@ -140,6 +146,10 @@ class CommandProcessor(Thread):
                     StreamQueue.put('<' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSUPSSTATUS\n":
+                    if CommandQueueLockout is True:
+                        StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nCommandQueue lockout enabled\nok\n')
+                        CommandQueue.task_done()
+                        continue
                     try:
                         upsdata = self.upsclient.list_vars(flamosdconfig.nut_ups_name)
                         data = "CMD FLAMOSUPSSTATUS Received.\n"
@@ -157,9 +167,29 @@ class CommandProcessor(Thread):
                         StreamQueue.put('< ' + data)
                         CommandQueue.task_done()
                     except:
-                        logger.error('Error communicating with NUT')
+                        logger.error('[CommandProcessor] Error communicating with NUT')
                         StreamQueue.put('CommandProcessor UPS ERROR: Error communicating with NUT')
                         CommandQueue.task_done()
+                elif command == "FLAMOSCOMMANDQUEUELOCKOUTENABLE\n":
+                    data = "CMD FLAMOSCOMMANDQUEUELOCKOUTENABLE Received.\nCommandQueue lockout enabled\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueueLockout = True
+                    CommandQueue.task_done()
+                    CommandQueue.clear()
+                    sleep(.3)
+                    CommandQueue.clear()
+                elif command == "FLAMOSCOMMANDQUEUELOCKOUTDISABLE\n":
+                    data = "CMD FLAMOSCOMMANDQUEUELOCKOUTENABLE Received.\nCommandQueue lockout disabled\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueueLockout = False
+                    CommandQueue.task_done()
+                elif command == "FLAMOSCOMMANDQUEUELOCKOUTSTATUS\n":
+                    data = "CMD FLAMOSCOMMANDQUEUELOCKOUTENABLE Received.\nCommandQueueLockout: " + str(CommandQueueLockout) + "\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                else:
+                    logger.info('[CommandProcessor] Invalid command: ' + command)
+
 
 
 # Main Thread Code
@@ -170,6 +200,10 @@ def main():
     handler.setLevel(logging.DEBUG)
     logger = logging.getLogger('flamosd')
     logger.addHandler(handler)
+
+    # Starting global command queue priority override
+    global CommandQueueLockout
+    CommandQueueLockout = False
 
     # Starting Queues
     global CommandQueue
