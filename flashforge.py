@@ -66,7 +66,7 @@ class FlashForge(object):
 
             # decode data
             return data.replace('\r', '')
-        except usb1.USBError as usberror:
+        except (usb1.USBError,usb1.USBErrorNoDevice) as usberror:
             # retry if retry_counter set
             if retry_counter > 0:
                 # sleep and retry claiming interface
@@ -75,16 +75,19 @@ class FlashForge(object):
                     # wait for timeout
                     time.sleep(retry_timeout)
 
-                    # clean everything up
-                    self._handle.releaseInterface(0)
-                    self._handle.close()
-                    self._context.close()
+                    try:
+                        # clean everything up
+                        self._handle.releaseInterface(0)
+                        self._handle.close()
+                        self._context.close()
 
-                    # open device
-                    self._context = usb1.USBContext()
-                    self._handle = self._context.openByVendorIDAndProductID(self.vendorid, self.deviceid)
-                    success = self._handle.claimInterface(0)
-                    retry_counter = retry_counter - 1
+                        # open device
+                        self._context = usb1.USBContext()
+                        self._handle = self._context.openByVendorIDAndProductID(self.vendorid, self.deviceid)
+                        success = self._handle.claimInterface(0)
+                        retry_counter = retry_counter - 1
+                    except:
+                        pass
 
                 if success:
                     # if connection successfull gain control.

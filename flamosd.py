@@ -136,6 +136,7 @@ class CommandProcessor(Thread):
                         StreamQueue.put('< ' + data)
                         CommandQueue.task_done()
                     except FlashForgeError as error:
+                        self.ff = None
                         logger.error(error.message)
                         StreamQueue.put('CommandProcessor ERROR: {0}'.format(error.message))
                         CommandQueue.task_done()
