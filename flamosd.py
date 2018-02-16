@@ -121,7 +121,7 @@ class CommandProcessor(Thread):
                         data += '\n'
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
-                except Error as error:
+                except FlashForgeError as error:
                     logger.error(error.message)
                     StreamQueue.put('CommandProcessor ERROR: {0}'.format(error.message))
                     CommandQueue.task_done()
@@ -150,9 +150,9 @@ class CommandProcessor(Thread):
                         data += "ok\n"
                         StreamQueue.put('< ' + data)
                         CommandQueue.task_done()
-                    except Error as error:
-                        logger.error(error.message)
-                        StreamQueue.put('CommandProcessor UPS ERROR: {0}'.format(error.message))
+                    except:
+                        logger.error('Error communicating with NUT')
+                        StreamQueue.put('CommandProcessor UPS ERROR: Error communicating with NUT')
                         CommandQueue.task_done()
 
 
