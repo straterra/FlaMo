@@ -121,7 +121,7 @@ class CommandProcessor(Thread):
                         logger.error('[CommandProcessor] Error connecting to FlashForge Dreamer via USB')
                         StreamQueue.put('< CMD ' + ' ERROR\nok\n')
                         CommandQueue.task_done()
-                        break
+                        continue
                 try:
                     data = self.ff.gcodecmd(command)
                     if not data.endswith('\n'):
