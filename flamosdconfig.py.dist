@@ -11,3 +11,10 @@ nut_ups_name = '850va'
 
 # Enable OpenHAB support
 enable_openhab = 'yes'
+openhab_username = 'nobody'
+openhab_password = 'nicetry'
+
+# OpenHAB devices
+openhab_power_url = 'https://openhabian/rest/items/zwave_device_e0c84b28_node18_switch_binary'
+openhab_smoke_url = 'https://openhabian/rest/items/nest_smoke_detector_cb6e30b7_X2PELsAZspln4_h5Q2NGXSpJtDOSWRh3_smoke_alarm_state'
+openhab_co_url = 'https://openhabian/rest/items/nest_smoke_detector_cb6e30b7_X2PELsAZspln4_h5Q2NGXSpJtDOSWRh3_co_alarm_state'

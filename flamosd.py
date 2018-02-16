@@ -14,6 +14,8 @@ from logging.handlers import RotatingFileHandler
 from flashforge import FlashForge, FlashForgeError
 from nut2 import PyNUTClient
 import flamosdconfig
+import requests
+from requests.auth import HTTPBasicAuth
 
 # Thread definitions
 ## Stream Queue Exporter
@@ -102,6 +104,20 @@ class CommandProcessor(Thread):
     def run(self):
         logger.info('[CommandProcessor] started')
         self.ff = None
+        self.postheaders = {
+            'Content-Type': 'text/plain',
+            'Accept': 'application/json',
+        }
+        self.getheaders = {
+            'Content-Type': 'text/plain',
+        }
+        self.openhabianuser = flamosdconfig.openhab_username
+        self.openhabianpass = flamosdconfig.openhab_password
+        self.openhab_power_url = flamosdconfig.openhab_power_url
+        self.openhab_smoke_url = flamosdconfig.openhab_smoke_url
+        self.openhab_co_url = flamosdconfig.openhab_co_url
+
+
         if flamosdconfig.enable_nut == "yes":
             self.upsclient = PyNUTClient()
             logger.info('[CommandProcessor] NUT support enabled')
@@ -184,6 +200,79 @@ class CommandProcessor(Thread):
                     CommandQueue.task_done()
                 elif command == "FLAMOSCOMMANDQUEUELOCKOUTSTATUS\n":
                     data = "CMD FLAMOSCOMMANDQUEUELOCKOUTENABLE Received.\nCommandQueueLockout: " + str(CommandQueueLockout) + "\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSPOWERON\n":
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='ON', auth=(self.openhabianuser, self.password))
+                    if r.status_code == requests.codes.ok:
+                        data = "CMD FLAMOSPOWERON Received.\nDevice powered on\nok\n"
+                    else:
+                        data = "CMD FLAMOSPOWERON Received.\nRestAPI call failed\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSPOWEROFF\n":
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.password))
+                    if r.status_code == requests.codes.ok:
+                        data = "CMD FLAMOSPOWEROFF Received.\nDevice powered off\nok\n"
+                    else:
+                        data = "CMD FLAMOSPOWEROFF Received.\nRestAPI call failed\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSPOWERSTATUS\n":
+                    r = requests.get(self.openhab_power_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    if r.status_code == requests.codes.ok:
+                        data = "CMD FLAMOSPOWERSTATUS Received.\nPowerStatus: " + r.text + "\nok\n"
+                    else:
+                        data = "CMD FLAMOSPOWERSTATUS Received.\nRestAPI call failed\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSSMOKESTATUS\n":
+                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    if r.status_code == requests.codes.ok:
+                        data = "CMD FLAMOSSMOKESTATUS Received.\nSmokeStatus: " + r.text + "\nok\n"
+                    else:
+                        data = "CMD FLAMOSSMOKESTATUS Received.\nRestAPI call failed\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSCOSTATUS\n":
+                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    if r.status_code == requests.codes.ok:
+                        data = "CMD FLAMOSCOSTATUS Received.\nCOStatus: " + r.text + "\nok\n"
+                    else:
+                        data = "CMD FLAMOSCOSTATUS Received.\nRestAPI call failed\nok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
+                elif command == "FLAMOSFIREDRILL\n":
+                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    smokedata = None
+                    if r.status_code == requests.codes.ok:
+                        smokedata = r.text
+                    else:
+                        smokedata = "Error"
+
+                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    codata = None
+                    if r.status_code == requests.codes.ok:
+                        codata = r.text
+                    else:
+                        codata = "Error"
+
+                    CommandQueueLockout = True
+                    time.sleep(5)
+
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.password))
+                    poweroff = None
+                    if r.status_code == requests.codes.ok:
+                        poweroff = str(True)
+                    else:
+                        poweroff = str(False)
+
+                    data = "CMD FLAMOSFIREDRILL Received.\n"
+                    data += "SmokeStatus: " + smokedata + "\n"
+                    data += "COStatus: " + codata + "\n"
+                    data += "CommandQueue lockout enabled\n"
+                    data += "PowerStatus: " + poweroff + "\n"
+                    data += "ok\n"
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 else:
