@@ -203,7 +203,7 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSPOWERON\n":
-                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='ON', auth=(self.openhabianuser, self.password))
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='ON', auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
                         data = "CMD FLAMOSPOWERON Received.\nDevice powered on\nok\n"
                     else:
@@ -211,7 +211,7 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSPOWEROFF\n":
-                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.password))
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
                         data = "CMD FLAMOSPOWEROFF Received.\nDevice powered off\nok\n"
                     else:
@@ -219,7 +219,7 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSPOWERSTATUS\n":
-                    r = requests.get(self.openhab_power_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    r = requests.get(self.openhab_power_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
                         data = "CMD FLAMOSPOWERSTATUS Received.\nPowerStatus: " + r.text + "\nok\n"
                     else:
@@ -227,7 +227,7 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSSMOKESTATUS\n":
-                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
                         data = "CMD FLAMOSSMOKESTATUS Received.\nSmokeStatus: " + r.text + "\nok\n"
                     else:
@@ -235,7 +235,7 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSCOSTATUS\n":
-                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
                         data = "CMD FLAMOSCOSTATUS Received.\nCOStatus: " + r.text + "\nok\n"
                     else:
@@ -243,14 +243,14 @@ class CommandProcessor(Thread):
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
                 elif command == "FLAMOSFIREDRILL\n":
-                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
                     smokedata = None
                     if r.status_code == requests.codes.ok:
                         smokedata = r.text
                     else:
                         smokedata = "Error"
 
-                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.password))
+                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
                     codata = None
                     if r.status_code == requests.codes.ok:
                         codata = r.text
@@ -260,7 +260,7 @@ class CommandProcessor(Thread):
                     CommandQueueLockout = True
                     time.sleep(5)
 
-                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.password))
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.openhabianpass))
                     poweroff = None
                     if r.status_code == requests.codes.ok:
                         poweroff = str(True)
