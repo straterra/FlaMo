@@ -100,7 +100,7 @@ class CommandProcessor(Thread):
 
     def run(self):
         logger.info('[CommandProcessor] started')
-            self.ff = None
+        self.ff = None
         if flamosdconfig.enable_nut == "yes":
             self.upsclient = PyNUTClient()
             logger.info('[CommandProcessor] NUT support enabled')
