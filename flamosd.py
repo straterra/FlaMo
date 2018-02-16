@@ -111,6 +111,7 @@ class CommandProcessor(Thread):
         while True:
             command = CommandQueue.get()
             global CommandQueueLockout
+            global logging
             if not command.endswith('\n'):
                 command += '\n'
             StreamQueue.put('> ' + command)
@@ -119,26 +120,25 @@ class CommandProcessor(Thread):
                 if CommandQueueLockout is True:
                     StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nCommandQueue lockout enabled\nok\n')
                     CommandQueue.task_done()
-                    continue
-
-                if self.ff == None:
+                else:
+                    if self.ff == None:
+                        try:
+                            self.ff = FlashForge()
+                        except:
+                            logger.error('[CommandProcessor] Error connecting to FlashForge Dreamer via USB')
+                            StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nok\n')
+                            CommandQueue.task_done()
+                            continue
                     try:
-                        self.ff = FlashForge()
-                    except:
-                        logger.error('[CommandProcessor] Error connecting to FlashForge Dreamer via USB')
-                        StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nok\n')
+                        data = self.ff.gcodecmd(command)
+                        if not data.endswith('\n'):
+                            data += '\n'
+                        StreamQueue.put('< ' + data)
                         CommandQueue.task_done()
-                        continue
-                try:
-                    data = self.ff.gcodecmd(command)
-                    if not data.endswith('\n'):
-                        data += '\n'
-                    StreamQueue.put('< ' + data)
-                    CommandQueue.task_done()
-                except FlashForgeError as error:
-                    logger.error(error.message)
-                    StreamQueue.put('CommandProcessor ERROR: {0}'.format(error.message))
-                    CommandQueue.task_done()
+                    except FlashForgeError as error:
+                        logger.error(error.message)
+                        StreamQueue.put('CommandProcessor ERROR: {0}'.format(error.message))
+                        CommandQueue.task_done()
             else:
                 if command == "FLAMOSPING\n":
                     data = "CMD FLAMOSPING Received.\n"

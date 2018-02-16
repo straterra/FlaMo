@@ -38,8 +38,11 @@ def StreamQueueImporter():
     socket.connect('tcp://127.0.0.1:5556')
     socket.setsockopt(zmq.SUBSCRIBE, b'')
     while True:
-        stream = socket.recv_string()
-        socketio.emit('terminal', stream, broadcast=True)
+        try:
+            stream = socket.recv_string(flags=zmq.NOBLOCK)
+            socketio.emit('terminal', stream, broadcast=True)
+        except zmq.Again as e:
+            pass
         eventlet.sleep(0)
 
 
@@ -48,7 +51,7 @@ def StreamQueueImporter():
 def socketio_machine_state(cmd):
     if not cmd == "M105":
         if session.get('logged_in'):
-            print('LALA {0}'.format(cmd))
+            print('Command Received from SocketIO: {0}'.format(cmd))
             socketCommand.send_string(str(cmd))
 
 
