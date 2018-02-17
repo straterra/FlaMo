@@ -32,7 +32,7 @@ socketCommand.connect('tcp://127.0.0.1:5557')
 # Detect version
 repo = git.Repo(search_parent_directories=True)
 sha = repo.head.object.hexsha
-version = "FlaMoS " + str(next((tag for tag in repo.tags if tag.commit == repo.head.commit), None))  + "-" + str(repo.head.object.hexsha)
+version = "FlaMoS " + str(next((tag for tag in repo.tags if tag.commit == repo.head.commit), "git"))  + "-" + str(repo.head.object.hexsha)
 print(version)
 
 # Thread for processing ZeroMQ messages
