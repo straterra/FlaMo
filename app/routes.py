@@ -48,6 +48,7 @@ def StreamQueueImporter():
             stream = socket.recv_string(flags=zmq.NOBLOCK)
             socketio.emit('terminal', stream, broadcast=True)
         except zmq.Again as e:
+            time.sleep(.1)
             pass
         eventlet.sleep(0)
 

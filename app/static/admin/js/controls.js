@@ -15,6 +15,10 @@ $('#poweroffbutton').click(function(){
 	socket.emit('gcodecmd', 'FLAMOSPOWEROFFPROPER');
 });
 
+$('#emebutton').click(function(){
+	socket.emit('gcodecmd', 'M26');
+});
+
 $('#move_xy_home').click(function(){
 	socket.emit('gcodecmd', 'G28 X Y');
 });
