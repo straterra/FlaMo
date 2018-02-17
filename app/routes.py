@@ -22,12 +22,18 @@ from flask import Flask, render_template, request
 from app.tabledef import *
 from time import sleep
 import zmq
+import git
 
 # Setup ZMQ sockets
 contextCommand = zmq.Context()
 socketCommand = contextCommand.socket(zmq.PUB)
 socketCommand.connect('tcp://127.0.0.1:5557')
 
+# Detect version
+repo = git.Repo(search_parent_directories=True)
+sha = repo.head.object.hexsha
+version = "FlaMoS " + str(next((tag for tag in repo.tags if tag.commit == repo.head.commit), None))  + "-" + str(repo.head.object.hexsha)
+print(version)
 
 # Thread for processing ZeroMQ messages
 def StreamQueueImporter():
@@ -58,7 +64,7 @@ def socketio_machine_state(cmd):
 # Routes
 @app.route('/', methods=['GET'])
 def flamos():
-    return render_template('index.html', streamurl=app.config['VIDEO_URL'])
+    return render_template('index.html', streamurl=app.config['VIDEO_URL'], appversion=version)
 
 
 @app.route('/admin', methods=['GET'])
@@ -66,7 +72,7 @@ def admin():
     if not session.get('logged_in'):
         return redirect('/login')
     else:
-        return render_template('admin.html', streamurl=app.config['VIDEO_URL'])
+        return render_template('admin.html', streamurl=app.config['VIDEO_URL'], appversion=version)
 
 
 @app.route('/login', methods=["GET", "POST"])
