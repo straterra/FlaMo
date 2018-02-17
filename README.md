@@ -8,13 +8,17 @@ Working features at the moment:
  - Only Flashforge Dreamer printer supported by USB vendorid and deviceid
  - Move to scalable model using daemon + ZeroMQ
  - Seperate admin and read-only interfaces
+ - OpenHAB integration for Nest Smoke/CO detector and Z-Wave power strip support
+ - UPS support via NUT
+ - systemd support (Developed on Debian & Ubuntu)
 
-Forked feature goals
+Feature goals
  - Embedded HTML5 player for RMTP
  - Play real Dreamer audio files when corresponding event happens
  - Upload job file via HTTP
  - Move USBID to config files
  - Better deployment strategy (and instructions!)
+ - Nanny thread for Smoke/CO and triggers (Shut printer off after job, etc)
 
 # Installation
 
