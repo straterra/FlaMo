@@ -64,7 +64,7 @@ def socketio_machine_state(cmd):
 # Routes
 @app.route('/', methods=['GET'])
 def flamos():
-    return render_template('index.html', streamurl=app.config['VIDEO_URL'], appversion=version)
+    return render_template('index.html', streamurl=app.config['VIDEO_URL'], version=version)
 
 
 @app.route('/admin', methods=['GET'])
@@ -72,7 +72,7 @@ def admin():
     if not session.get('logged_in'):
         return redirect('/login')
     else:
-        return render_template('admin.html', streamurl=app.config['VIDEO_URL'], appversion=version)
+        return render_template('admin.html', streamurl=app.config['VIDEO_URL'], version=version)
 
 
 @app.route('/login', methods=["GET", "POST"])
