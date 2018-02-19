@@ -11,6 +11,7 @@ Working features at the moment:
  - OpenHAB integration for Nest Smoke/CO detector and Z-Wave power strip support
  - UPS support via NUT
  - systemd support (Developed on Debian & Ubuntu)
+ - Supervisor thread for Smoke/CO and triggers
 
 Feature goals
  - Embedded HTML5 player for RMTP
@@ -18,7 +19,8 @@ Feature goals
  - Upload job file via HTTP
  - Move USBID to config files
  - Better deployment strategy (and instructions!)
- - Nanny thread for Smoke/CO and triggers (Shut printer off after job, etc)
+ - Further supervisor thread use cases (Shut printer off after job, etc)
+ - Custom stream communication mode for serial emulation pass-through
 
 # Installation
 
