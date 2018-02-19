@@ -57,6 +57,49 @@ class CommandQueueImporter(Thread):
             CommandQueue.put(command)
 
 
+## Supervisor
+class Supervisor(Thread):
+    _instance = None
+
+    def __init__(self):
+        Thread.__init__(self)
+        self.context = zmq.Context()
+        self.connectionstring = "tcp://127.0.0.1:%s" % "5557"
+
+    def run(self):
+        logger.info('[Supervisor] started')
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect(self.connectionstring)
+        self.socket.setsockopt(zmq.SUBSCRIBE, b'')
+        while True:
+            command = self.socket.recv_string()
+            logger.debug('[Supervisor] Reading ZeroMQ data stream')
+            # Ignore errors
+            if "ERROR" in command:
+                logger.debug('[Supervisor] Ignored error command')
+                pass
+
+            # Executed data only
+            if "< CMD" in command:
+                # CO Status
+                if "FLAMOSCOSTATUS" in command:
+                    # Bad statuses
+                        if "WARNING" in command or "EMERGENCY" in command:
+                            # CO ALARM!
+                            logger.warning('[Supervisor] CO Alarm triggered! Issuing shutdown!')
+                            CommandQueue.put('FLAMOSEMERGENCYPOWEROFF')
+                        else:
+                            logger.debug('[Supervisor] CO status good')
+                elif "FLAMOSSMOKESTATUS" in command:
+                    # Bad statuses
+                        if "WARNING" in command or "EMERGENCY" in command:
+                            # CO ALARM!
+                            logger.warning('[Supervisor] Smoke Alarm triggered! Issuing shutdown!')
+                            CommandQueue.put('FLAMOSEMERGENCYPOWEROFF')
+                        else:
+                            logger.debug('[Supervisor] Smoke status good')
+
+
 ## Periodic Command Scheduler
 class PeriodicCommandScheduler(Thread):
     _instance = None
@@ -87,10 +130,10 @@ class PeriodicCommandScheduler5000ms(Thread):
         logger.info('[PeriodicCommandScheduler5000ms] started')
         while True:
             if CommandQueueLockout is False:
-                logger.info('[PeriodicCommandScheduler5000ms] Adding UPS status code to queue')
-                CommandQueue.put('FLAMOSUPSSTATUS')
                 logger.info('[PeriodicCommandScheduler5000ms] Adding FLAMOS Ping code to queue')
                 CommandQueue.put('FLAMOSPING')
+                logger.info('[PeriodicCommandScheduler5000ms] Adding UPS status code to queue')
+                CommandQueue.put('FLAMOSUPSSTATUS')
                 logger.info('[PeriodicCommandScheduler5000ms] Adding Smoke status code to queue')
                 CommandQueue.put('FLAMOSSMOKESTATUS')
                 logger.info('[PeriodicCommandScheduler5000ms] Adding CO status code to queue')
@@ -306,6 +349,38 @@ class CommandProcessor(Thread):
                     data += "ok\n"
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
+                elif command == "FLAMOSEMERGENCYPOWEROFF\n":
+                    CommandQueueLockout = True
+
+                    r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.openhabianpass))
+                    poweroff = None
+                    if r.status_code == requests.codes.ok:
+                        poweroff = str(True)
+                    else:
+                        poweroff = str(False)
+
+                    r = requests.get(self.openhab_smoke_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
+                    smokedata = None
+                    if r.status_code == requests.codes.ok:
+                        smokedata = r.text
+                    else:
+                        smokedata = "Error"
+
+                    r = requests.get(self.openhab_co_url + "/state", headers=self.getheaders, auth=(self.openhabianuser, self.openhabianpass))
+                    codata = None
+                    if r.status_code == requests.codes.ok:
+                        codata = r.text
+                    else:
+                        codata = "Error"
+
+                    data = "CMD FLAMOSEMERGENCYPOWEROFF Received.\n"
+                    data += "CommandQueue lockout enabled\n"
+                    data += "PowerStatus: " + poweroff + "\n"
+                    data += "SmokeStatus: " + smokedata + "\n"
+                    data += "COStatus: " + codata + "\n"
+                    data += "ok\n"
+                    StreamQueue.put('< ' + data)
+                    CommandQueue.task_done()
                 else:
                     logger.info('[CommandProcessor] Invalid command: ' + command)
 
@@ -340,6 +415,10 @@ def main():
     CommandQueueImporter._instance = CommandQueueImporter()
     CommandQueueImporter._instance.start()
 
+    ## Supervisor Thread
+    Supervisor._instance = Supervisor()
+    Supervisor._instance.start()
+
     ## Period Command Scheduler
     PeriodicCommandScheduler._instance = PeriodicCommandScheduler()
     PeriodicCommandScheduler._instance.start()
@@ -363,6 +442,11 @@ def main():
             CommandQueueImporter._instance = CommandQueueImporter()
             CommandQueueImporter._instance.start()
             logger.warning('[Main] CommandQueueImporter was found dead and restarted')
+
+        if Supervisor._instance is None:
+            Supervisor._instance = Supervisor()
+            Supervisor._instance.start()
+            logger.warning('[Main] Supervisor was found dead and restarted')
 
         if PeriodicCommandScheduler._instance is None:
             PeriodicCommandScheduler._instance = PeriodicCommandScheduler()
