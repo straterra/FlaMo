@@ -64,7 +64,7 @@ class Supervisor(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.context = zmq.Context()
-        self.connectionstring = "tcp://127.0.0.1:%s" % "5557"
+        self.connectionstring = "tcp://127.0.0.1:%s" % "5556"
 
     def run(self):
         logger.info('[Supervisor] started')
