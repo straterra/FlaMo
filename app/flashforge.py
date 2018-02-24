@@ -93,6 +93,51 @@ class FlashForge(object):
 
             raise FlashForgeError('USB Error', usberror)
 
+
+    def asciicommand(self, cmd, timeout=10, retry_counter=5, retry_timeout=1):
+        try:
+            self._handle.bulkWrite(self.ENDPOINT_CMD_IN, cmd.encode())
+
+            # read data until ok signals end
+            data = ''
+            cmd_done = False
+            while not cmd_done:
+                newdata = self._handle.bulkRead(self.ENDPOINT_CMD_OUT, self.BUFFER_SIZE, int(timeout * 1000.0)).decode()
+
+                if newdata.strip() == 'ok':
+                    cmd_done = True
+                elif newdata.strip().endswith('ok'):
+                    cmd_done = True
+
+                data = data + newdata
+
+            return data
+        except usb1.USBError as usberror:
+            # retry if retry_counter set
+            if retry_counter > 0:
+                # sleep and retry claiming interface
+                success = False
+                while not success and retry_counter > 0:
+                    # wait for timeout
+                    time.sleep(retry_timeout)
+
+                    # clean everything up
+                    self._handle.releaseInterface(0)
+                    self._handle.close()
+                    self._context.close()
+
+                    # open device
+                    self._context = usb1.USBContext()
+                    self._handle = self._context.openByVendorIDAndProductID(self.vendorid, self.deviceid)
+                    success = self._handle.claimInterface(0)
+                    retry_counter = retry_counter - 1
+
+                if success:
+                    # if connection successfull gain control.
+                    return self.asciicommand(cmd, timeout, retry_counter - 1, retry_timeout)
+
+            raise FlashForgeError('USB Error', usberror)
+
     def __del__(self):
         try:
             self._handle.releaseInterface(0)

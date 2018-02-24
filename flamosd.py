@@ -110,7 +110,7 @@ class PeriodicCommandScheduler(Thread):
     def run(self):
         logger.info('[PeriodicCommandScheduler500ms] started')
         while True:
-            if CommandQueueLockout is False:
+            if CommandQueueLockout is False and RemoteCommandLockout is False:
                 logger.info('[PeriodicCommandScheduler500ms] Adding Dreamer status codes to queue')
                 CommandQueue.put('M115')
                 CommandQueue.put('M119')
@@ -145,6 +145,100 @@ class PeriodicCommandScheduler5000ms(Thread):
             time.sleep(5)
 
 
+## Remote Serial Injector
+class RemoteSerialInjector(Thread):
+    _instance = None
+
+    def __init__(self):
+        Thread.__init__(self)
+        self.port = 9999
+        self.TCPSocket = socket.socket()
+
+    def readasciicommand(self, conn):
+        # read data from TCP socket until new line signals end
+        data = ''
+        cmd_done = False
+        while not cmd_done:
+            newdata = None
+            try:
+                newdata = conn.recv(1024).decode()
+            except:
+                continue
+            if newdata is None:
+                next
+            elif newdata.endswith('\n'):
+                cmd_done = True
+            data += newdata
+        return data
+
+    def readuploaddata(self, conn):
+        # read data from TCP socket, exactly 4112 bytes
+        MSGLEN = 4112
+        chunks = []
+        bytes_recd = 0
+        while bytes_recd < MSGLEN:
+            chunk = conn.recv(min(MSGLEN - bytes_recd, 2048))
+            if chunk == b'':
+                raise RuntimeError("socket connection broken")
+            chunks.append(chunk)
+            bytes_recd = bytes_recd + len(chunk)
+        return b''.join(chunks)
+
+    def run(self):
+        logger.info('[RemoteSerialInjector] started')
+        while True:
+            self.TCPSocket.bind(('', port))
+            self.TCPSocket.listen(1)
+
+            while True:
+                conn, addr = self.TCPSocket.accept()
+                logger.info("[RemoteSerialInjector] Connection from: " + str(addr))
+                RemoteCommandLockout = True
+                
+                run_loop = True
+                binary_mode = False
+
+                while run_loop is True:
+                    if ff is None:
+                        try:
+                            ff = FlashForge()
+                        except:
+                            logger.error('[RemoteSerialInjector] Error connecting to FlashForge Dreamer via USB')
+                            continue
+                    if binary_mode is False:
+                        command = self.readasciicommand(conn)
+                        try:
+                            if "~M28 " in command.strip():
+                                binary_mode = True
+                                jobinfo['file'] = command.strip().split()[3].split('/')[-1]
+                                # We round down here using int because the file is padded to 4096 boundaries
+                                jobinfo['segments'] = int(float(command.strip().split()[2])/4096)
+                                jobinfo['status'] = 'Uploading ' + jobinfo['file'] + ': ' + jobinfo['percentage']
+                        except:
+                            continue
+                        StreamQueue.put('> ' + command)
+                        data = ff.asciicommand(command)
+                        if not data.endswith('\n'):
+                            data += '\n'
+                        StreamQueue.put('< ' + data)
+                        conn.send(data.encode())
+                    else:
+                        command = self.readuploaddata(conn)
+                        data = ff.asciicommand(command)
+                        chunknumber_search = re.search('N(\d+).+ok.+', data)
+                        if chunknumber_search:
+                            jobinfo['percentage'] = str(int(int(chunknumber_search.group(1))/int(jobinfo['segments'])) * 100) + "%"
+                            jobinfo['status'] = 'Uploading ' + jobinfo['file'] + ': ' + jobinfo['percentage']
+                            if int(jobinfo['segments']) == int(chunknumber_search.group(1)):
+                                binary_mode = False
+                                jobinfo['status'] = 'Uploaded ' + jobinfo['file']
+                        StreamQueue.put('< ' + data)
+                        conn.send(data.encode())
+
+
+            conn.close()
+
+
 ## Command Processor
 class CommandProcessor(Thread):
     _instance = None
@@ -154,7 +248,7 @@ class CommandProcessor(Thread):
 
     def run(self):
         logger.info('[CommandProcessor] started')
-        self.ff = None
+        ff = None
         self.postheaders = {
             'Content-Type': 'text/plain',
             'Accept': 'application/json',
@@ -187,23 +281,26 @@ class CommandProcessor(Thread):
                 if CommandQueueLockout is True:
                     StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nCommandQueue lockout enabled\nok\n')
                     CommandQueue.task_done()
+                elif RemoteCommandLockout is True:
+                    StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nRemote command lockout enabled\nok\n')
+                    CommandQueue.task_done()
                 else:
-                    if self.ff == None:
+                    if ff is None:
                         try:
-                            self.ff = FlashForge()
+                            ff = FlashForge()
                         except:
                             logger.error('[CommandProcessor] Error connecting to FlashForge Dreamer via USB')
                             StreamQueue.put('< CMD ' + command.rstrip() + ' ERROR\nok\n')
                             CommandQueue.task_done()
                             continue
                     try:
-                        data = self.ff.gcodecmd(command)
+                        data = ff.gcodecmd(command)
                         if not data.endswith('\n'):
                             data += '\n'
                         StreamQueue.put('< ' + data)
                         CommandQueue.task_done()
                     except FlashForgeError as error:
-                        self.ff = None
+                        ff = None
                         logger.error(error.message)
                         StreamQueue.put('CommandProcessor ERROR: {0}'.format(error.message))
                         CommandQueue.task_done()
@@ -267,7 +364,7 @@ class CommandProcessor(Thread):
                         data = "CMD FLAMOSPOWERONPROPER Received.\nDevice powered on\nok\n"
                     else:
                         data = "CMD FLAMOSPOWERONPROPER Received.\nRestAPI call failed\nok\n"
-                    self.ff = None
+                    ff = None
                     time.sleep(30)
                     StreamQueue.put('< ' + data)
                     CommandQueueLockout = False
@@ -282,7 +379,7 @@ class CommandProcessor(Thread):
                     CommandQueue.task_done()
                 elif command == "FLAMOSPOWEROFFPROPER\n":
                     CommandQueueLockout = True
-                    self.ff = None
+                    ff = None
                     r = requests.post(self.openhab_power_url, headers=self.postheaders, data='OFF', auth=(self.openhabianuser, self.openhabianpass))
                     if r.status_code == requests.codes.ok:
                         data = "CMD FLAMOSPOWEROFFPROPER Received.\nDevice powered off\nok\n"
@@ -399,11 +496,28 @@ def main():
     global CommandQueueLockout
     CommandQueueLockout = False
 
+    # Starting remote command priority override
+    global RemoteCommandLockout
+    RemoteCommandLockout = False
+
     # Starting Queues
     global CommandQueue
     CommandQueue = Queue()
     global StreamQueue
     StreamQueue = Queue()
+
+    # FlashForge object
+    global ff
+    ff = None
+
+    # Job information and sane defaults
+    global jobinfo
+    jobinfo['status'] = 'No job'
+    jobinfo['percentage'] = '0%'
+    jobinfo['segments'] = 0
+    jobinfo['file'] = 'None'
+    jobinfo['sleep'] = False
+    jobinfo['link'] = 'javascript:void(0);'
 
     # Start child threads
 
