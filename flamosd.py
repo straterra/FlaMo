@@ -166,9 +166,15 @@ class RemoteSerialInjector(Thread):
             try:
                 newdata = conn.recv(1024).decode()
             except:
-                continue
-            if newdata is None:
-                next
+                conn.close()
+                global RemoteCommandLockout
+                RemoteCommandLockout = False
+                self.run_loop = False
+            if not newdata:
+                conn.close()
+                global RemoteCommandLockout
+                RemoteCommandLockout = False
+                self.run_loop = False
             elif newdata.endswith('\n'):
                 cmd_done = True
             data += newdata
@@ -186,6 +192,7 @@ class RemoteSerialInjector(Thread):
                 conn.close()
                 global RemoteCommandLockout
                 RemoteCommandLockout = False
+                self.run_loop = False
             chunks.append(chunk)
             bytes_recd = bytes_recd + len(chunk)
         return b''.join(chunks)
@@ -206,10 +213,10 @@ class RemoteSerialInjector(Thread):
                 global jobinfo
                 RemoteCommandLockout = True
                 
-                run_loop = True
+                self.run_loop = True
                 binary_mode = False
 
-                while run_loop is True:
+                while self.run_loop is True:
                     try:
                         if ff is None:
                             try:
@@ -220,6 +227,11 @@ class RemoteSerialInjector(Thread):
                                 continue
                         if binary_mode is False:
                             command = self.readasciicommand(conn)
+                            if not command:
+                                conn.close()
+                                RemoteCommandLockout = False
+                                self.run_loop = False
+                                next
                             try:
                                 if "M28 " in command.strip():
                                     binary_mode = True
@@ -253,7 +265,7 @@ class RemoteSerialInjector(Thread):
                     finally:
                         conn.close()
                         RemoteCommandLockout = False
-                        run_loop = False
+                        self.run_loop = False
 
 
 ## Command Processor
