@@ -158,6 +158,7 @@ class RemoteSerialInjector(Thread):
         self.TCPSocket = socket.socket()
 
     def readasciicommand(self, conn):
+        global RemoteCommandLockout
         # read data from TCP socket until new line signals end
         data = ''
         cmd_done = False
@@ -167,12 +168,10 @@ class RemoteSerialInjector(Thread):
                 newdata = conn.recv(1024).decode()
             except:
                 conn.close()
-                global RemoteCommandLockout
                 RemoteCommandLockout = False
                 self.run_loop = False
             if not newdata:
                 conn.close()
-                global RemoteCommandLockout
                 RemoteCommandLockout = False
                 self.run_loop = False
             elif newdata.endswith('\n'):
