@@ -110,6 +110,8 @@ class PeriodicCommandScheduler(Thread):
 
     def run(self):
         logger.info('[PeriodicCommandScheduler500ms] started')
+        global RemoteCommandLockout
+        global CommandQueueLockout
         while True:
             if CommandQueueLockout is False and RemoteCommandLockout is False:
                 logger.info('[PeriodicCommandScheduler500ms] Adding Dreamer status codes to queue')
@@ -187,6 +189,7 @@ class RemoteSerialInjector(Thread):
 
     def run(self):
         logger.info('[RemoteSerialInjector] started')
+        global ff
         while True:
             self.TCPSocket.bind(('', self.port))
             self.TCPSocket.listen(1)
@@ -194,6 +197,9 @@ class RemoteSerialInjector(Thread):
             while True:
                 conn, addr = self.TCPSocket.accept()
                 logger.info("[RemoteSerialInjector] Connection from: " + str(addr))
+                print("RemoteSerialInjector] Connection from: " + str(addr))
+                global RemoteCommandLockout
+                global jobinfo
                 RemoteCommandLockout = True
                 
                 run_loop = True
@@ -206,9 +212,11 @@ class RemoteSerialInjector(Thread):
                                 ff = FlashForge()
                             except:
                                 logger.error('[RemoteSerialInjector] Error connecting to FlashForge Dreamer via USB')
+                                print("USB Error")
                                 continue
                         if binary_mode is False:
                             command = self.readasciicommand(conn)
+                            print(str(command))
                             try:
                                 if "~M28 " in command.strip():
                                     binary_mode = True
@@ -223,6 +231,7 @@ class RemoteSerialInjector(Thread):
                             if not data.endswith('\n'):
                                 data += '\n'
                             StreamQueue.put('< ' + data)
+                            print('< ' + data)
                             conn.send(data.encode())
                         else:
                             command = self.readuploaddata(conn)
@@ -235,6 +244,7 @@ class RemoteSerialInjector(Thread):
                                     binary_mode = False
                                     jobinfo['status'] = 'Uploaded ' + jobinfo['file']
                             StreamQueue.put('< ' + data)
+                            print('< ' + data)
                             conn.send(data.encode())
                     except:
                         conn.close()
@@ -250,6 +260,8 @@ class CommandProcessor(Thread):
 
     def run(self):
         logger.info('[CommandProcessor] started')
+        global RemoteCommandLockout
+        global ff
         ff = None
         self.postheaders = {
             'Content-Type': 'text/plain',
