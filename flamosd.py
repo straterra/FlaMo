@@ -181,8 +181,11 @@ class RemoteSerialInjector(Thread):
         bytes_recd = 0
         while bytes_recd < MSGLEN:
             chunk = conn.recv(min(MSGLEN - bytes_recd, 2048))
-            if chunk == b'':
+            if not chunk:
                 raise RuntimeError("socket connection broken")
+                conn.close()
+                global RemoteCommandLockout
+                RemoteCommandLockout = False
             chunks.append(chunk)
             bytes_recd = bytes_recd + len(chunk)
         return b''.join(chunks)
@@ -251,6 +254,9 @@ class RemoteSerialInjector(Thread):
                         conn.close()
                         RemoteCommandLockout = False
                         break
+                conn.close()
+                RemoteCommandLockout = False
+                next
 
 
 ## Command Processor
