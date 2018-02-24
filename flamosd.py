@@ -196,6 +196,8 @@ class RemoteSerialInjector(Thread):
                 global RemoteCommandLockout
                 RemoteCommandLockout = False
                 self.run_loop = False
+                chunks = []
+                break
             chunks.append(chunk)
             bytes_recd = bytes_recd + len(chunk)
         return b''.join(chunks)
@@ -212,7 +214,6 @@ class RemoteSerialInjector(Thread):
                 RemoteCommandLockout = False
                 conn, addr = self.TCPSocket.accept()
                 logger.info("[RemoteSerialInjector] Connection from: " + str(addr))
-                print("RemoteSerialInjector] Connection from: " + str(addr))
                 global jobinfo
                 RemoteCommandLockout = True
                 
@@ -226,7 +227,6 @@ class RemoteSerialInjector(Thread):
                                 ff = FlashForge()
                             except:
                                 logger.error('[RemoteSerialInjector] Error connecting to FlashForge Dreamer via USB')
-                                print("USB Error")
                                 continue
                         if binary_mode is False:
                             command = self.readasciicommand(conn)
@@ -254,6 +254,11 @@ class RemoteSerialInjector(Thread):
                             conn.send(data.encode())
                         else:
                             command = self.readuploaddata(conn)
+                            if not command:
+                                conn.close()
+                                RemoteCommandLockout = False
+                                self.run_loop = False
+                                break
                             data = ff.asciicommand(command)
                             chunknumber_search = re.search('N(\d+).+ok.+', data)
                             if chunknumber_search:
