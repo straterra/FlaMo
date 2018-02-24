@@ -195,11 +195,11 @@ class RemoteSerialInjector(Thread):
             self.TCPSocket.listen(1)
 
             while True:
+                global RemoteCommandLockout
                 RemoteCommandLockout = False
                 conn, addr = self.TCPSocket.accept()
                 logger.info("[RemoteSerialInjector] Connection from: " + str(addr))
                 print("RemoteSerialInjector] Connection from: " + str(addr))
-                global RemoteCommandLockout
                 global jobinfo
                 RemoteCommandLockout = True
                 
