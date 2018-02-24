@@ -174,9 +174,11 @@ class RemoteSerialInjector(Thread):
                 conn.close()
                 RemoteCommandLockout = False
                 self.run_loop = False
-            elif newdata.endswith('\n'):
-                cmd_done = True
-            data += newdata
+                data = None
+            else:
+                if newdata.endswith('\n'):
+                    cmd_done = True
+                 data += newdata
         return data
 
     def readuploaddata(self, conn):
