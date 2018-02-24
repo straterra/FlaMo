@@ -16,6 +16,7 @@ from nut2 import PyNUTClient
 import flamosdconfig
 import requests
 from requests.auth import HTTPBasicAuth
+import socket
 
 # Thread definitions
 ## Stream Queue Exporter
