@@ -246,7 +246,7 @@ class RemoteSerialInjector(Thread):
                                 continue
                             StreamQueue.put('> ' + command)
                             print('> ' + command)
-                            data = ff.gcodecmd(command)
+                            data = ff.asciicommand(command)
                             if not data.endswith('\n'):
                                 data += '\n'
                             StreamQueue.put('< ' + data)
