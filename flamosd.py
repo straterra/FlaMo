@@ -188,7 +188,7 @@ class RemoteSerialInjector(Thread):
     def run(self):
         logger.info('[RemoteSerialInjector] started')
         while True:
-            self.TCPSocket.bind(('', port))
+            self.TCPSocket.bind(('', self.port))
             self.TCPSocket.listen(1)
 
             while True:
