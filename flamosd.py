@@ -178,7 +178,7 @@ class RemoteSerialInjector(Thread):
             else:
                 if newdata.endswith('\n'):
                     cmd_done = True
-                 data += newdata
+                data += newdata
         return data
 
     def readuploaddata(self, conn):
