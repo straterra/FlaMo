@@ -250,13 +250,10 @@ class RemoteSerialInjector(Thread):
                             StreamQueue.put('< ' + data)
                             print('< ' + data)
                             conn.send(data.encode())
-                    except:
+                    finally:
                         conn.close()
                         RemoteCommandLockout = False
-                        break
-                conn.close()
-                RemoteCommandLockout = False
-                next
+                        run_loop = False
 
 
 ## Command Processor
