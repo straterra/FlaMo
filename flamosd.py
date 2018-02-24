@@ -199,44 +199,45 @@ class RemoteSerialInjector(Thread):
                 binary_mode = False
 
                 while run_loop is True:
-                    if ff is None:
-                        try:
-                            ff = FlashForge()
-                        except:
-                            logger.error('[RemoteSerialInjector] Error connecting to FlashForge Dreamer via USB')
-                            continue
-                    if binary_mode is False:
-                        command = self.readasciicommand(conn)
-                        try:
-                            if "~M28 " in command.strip():
-                                binary_mode = True
-                                jobinfo['file'] = command.strip().split()[3].split('/')[-1]
-                                # We round down here using int because the file is padded to 4096 boundaries
-                                jobinfo['segments'] = int(float(command.strip().split()[2])/4096)
+                    try:
+                        if ff is None:
+                            try:
+                                ff = FlashForge()
+                            except:
+                                logger.error('[RemoteSerialInjector] Error connecting to FlashForge Dreamer via USB')
+                                continue
+                        if binary_mode is False:
+                            command = self.readasciicommand(conn)
+                            try:
+                                if "~M28 " in command.strip():
+                                    binary_mode = True
+                                    jobinfo['file'] = command.strip().split()[3].split('/')[-1]
+                                    # We round down here using int because the file is padded to 4096 boundaries
+                                    jobinfo['segments'] = int(float(command.strip().split()[2])/4096)
+                                    jobinfo['status'] = 'Uploading ' + jobinfo['file'] + ': ' + jobinfo['percentage']
+                            except:
+                                continue
+                            StreamQueue.put('> ' + command)
+                            data = ff.asciicommand(command)
+                            if not data.endswith('\n'):
+                                data += '\n'
+                            StreamQueue.put('< ' + data)
+                            conn.send(data.encode())
+                        else:
+                            command = self.readuploaddata(conn)
+                            data = ff.asciicommand(command)
+                            chunknumber_search = re.search('N(\d+).+ok.+', data)
+                            if chunknumber_search:
+                                jobinfo['percentage'] = str(int(int(chunknumber_search.group(1))/int(jobinfo['segments'])) * 100) + "%"
                                 jobinfo['status'] = 'Uploading ' + jobinfo['file'] + ': ' + jobinfo['percentage']
-                        except:
-                            continue
-                        StreamQueue.put('> ' + command)
-                        data = ff.asciicommand(command)
-                        if not data.endswith('\n'):
-                            data += '\n'
-                        StreamQueue.put('< ' + data)
-                        conn.send(data.encode())
-                    else:
-                        command = self.readuploaddata(conn)
-                        data = ff.asciicommand(command)
-                        chunknumber_search = re.search('N(\d+).+ok.+', data)
-                        if chunknumber_search:
-                            jobinfo['percentage'] = str(int(int(chunknumber_search.group(1))/int(jobinfo['segments'])) * 100) + "%"
-                            jobinfo['status'] = 'Uploading ' + jobinfo['file'] + ': ' + jobinfo['percentage']
-                            if int(jobinfo['segments']) == int(chunknumber_search.group(1)):
-                                binary_mode = False
-                                jobinfo['status'] = 'Uploaded ' + jobinfo['file']
-                        StreamQueue.put('< ' + data)
-                        conn.send(data.encode())
-
-
-            conn.close()
+                                if int(jobinfo['segments']) == int(chunknumber_search.group(1)):
+                                    binary_mode = False
+                                    jobinfo['status'] = 'Uploaded ' + jobinfo['file']
+                            StreamQueue.put('< ' + data)
+                            conn.send(data.encode())
+                    except:
+                        conn.close()
+                        RemoteCommandLockout = False
 
 
 ## Command Processor
@@ -545,6 +546,10 @@ def main():
     ## Command Processor
     CommandProcessor._instance = CommandProcessor()
     CommandProcessor._instance.start()
+
+    ## Remote Serial Injector
+    RemoteSerialInjector._instance = RemoteSerialInjector()
+    RemoteSerialInjector._instance.start()
 
     while True:
         logger.debug('[Main] Checking thread health...')
