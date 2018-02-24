@@ -195,6 +195,7 @@ class RemoteSerialInjector(Thread):
             self.TCPSocket.listen(1)
 
             while True:
+                RemoteCommandLockout = False
                 conn, addr = self.TCPSocket.accept()
                 logger.info("[RemoteSerialInjector] Connection from: " + str(addr))
                 print("RemoteSerialInjector] Connection from: " + str(addr))
@@ -249,6 +250,7 @@ class RemoteSerialInjector(Thread):
                     except:
                         conn.close()
                         RemoteCommandLockout = False
+                        break
 
 
 ## Command Processor
