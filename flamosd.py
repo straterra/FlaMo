@@ -170,6 +170,8 @@ class RemoteSerialInjector(Thread):
                 conn.close()
                 RemoteCommandLockout = False
                 self.run_loop = False
+                data = None
+                break
             if not newdata:
                 conn.close()
                 RemoteCommandLockout = False
