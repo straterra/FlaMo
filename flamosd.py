@@ -232,7 +232,7 @@ class RemoteSerialInjector(Thread):
                                 conn.close()
                                 RemoteCommandLockout = False
                                 self.run_loop = False
-                                next
+                                break
                             try:
                                 if "M28 " in command.strip():
                                     binary_mode = True
@@ -263,10 +263,12 @@ class RemoteSerialInjector(Thread):
                             StreamQueue.put('< ' + data)
                             print('< ' + data)
                             conn.send(data.encode())
-                    finally:
+                    except:
                         conn.close()
                         RemoteCommandLockout = False
                         self.run_loop = False
+                        break
+                print("Listening for more!")
 
 
 ## Command Processor
