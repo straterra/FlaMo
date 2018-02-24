@@ -216,9 +216,8 @@ class RemoteSerialInjector(Thread):
                                 continue
                         if binary_mode is False:
                             command = self.readasciicommand(conn)
-                            print(str(command))
                             try:
-                                if "~M28 " in command.strip():
+                                if "M28 " in command.strip():
                                     binary_mode = True
                                     jobinfo['file'] = command.strip().split()[3].split('/')[-1]
                                     # We round down here using int because the file is padded to 4096 boundaries
@@ -227,7 +226,8 @@ class RemoteSerialInjector(Thread):
                             except:
                                 continue
                             StreamQueue.put('> ' + command)
-                            data = ff.asciicommand(command)
+                            print('> ' + command)
+                            data = ff.gcodecmd(command)
                             if not data.endswith('\n'):
                                 data += '\n'
                             StreamQueue.put('< ' + data)
