@@ -512,7 +512,7 @@ def main():
 
     # Job information and sane defaults
     global jobinfo
-    jobinfo = []
+    jobinfo = {}
     jobinfo['status'] = 'No job'
     jobinfo['percentage'] = '0%'
     jobinfo['segments'] = 0
