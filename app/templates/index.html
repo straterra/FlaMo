@@ -25,8 +25,7 @@
 	<link href="static/css/vendor/spectrum.css" rel="stylesheet" />
 
 	<link href="static/css/main.css" rel="stylesheet" />
-    <link href="https://vjs.zencdn.net/5.8.8/video-js.css" rel="stylesheet">
-
+    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
 </head>
 
 <body class="bootcards-nofooter">
@@ -135,14 +134,14 @@
                     {% if video_type == "mjpeg" %}
 					<img src="{{streamurl}}" class="img-responsive"/>
                     {% else %}
-                    <video id="video-player" width="640" height="480" class="video-js vjs-default-skin" controls>
+                    <video id="video-player" width="640" height="480" class="video-js vjs-default-skin" controls preload="auto" data-setup='{}'>
                         <source src="{{streamurl}}" type="application/x-mpegURL">
                     </video>
 
-                    <script src="https://vjs.zencdn.net/5.8.8/video.js"></script>
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/3.6.12/videojs-contrib-hls.js"></script>
+                    <script src="https://unpkg.com/video.js/dist/video.js"></script>
+                    <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
                     <script>
-                        var player = videojs('video-player');
+                        const player = videojs('video-player');
                         player.play();
                     </script>
                     {% endif %}
