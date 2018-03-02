@@ -117,7 +117,17 @@
 					<div class="panel-heading">
 						<h3 class="panel-title">Webcam</h3>
 					</div>
-					<img src="{{streamurl}}" class="img-responsive"/>
+					<!-- <img src="{{streamurl}}" class="img-responsive"/> -->
+                      <video id="video-player" width="640" height="480" class="video-js vjs-default-skin" controls>
+                        <source src="{{streamurl}}" type="application/x-mpegURL">
+                      </video>
+
+                      <script src="https://vjs.zencdn.net/5.8.8/video.js"></script>
+                      <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/3.6.12/videojs-contrib-hls.js"></script>
+                      <script>
+                        var player = videojs('video-player');
+                        player.play();
+                      </script>
 				</div>
 			
 			</div>
