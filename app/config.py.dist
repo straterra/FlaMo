@@ -21,11 +21,11 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Video window type
-    ## Valid options are mjpeg or rmtp
-    video_type = 'mjpeg'
+    ## Valid options are mjpeg or video
+    VIDEO_TYPE = 'mjpeg'
 
     # URL for video source
-    video_url = ''
+    VIDEO_URL = ''
 
     # Enable UPS (NUT) support
     enable_nut = 'yes'
