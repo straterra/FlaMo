@@ -112,27 +112,7 @@
 						</div>
                     </div>
 				</div>
-				
-				<!-- CARD: Webcam -->
-				<div class="panel panel-default bootcards-media">
-					<div class="panel-heading">
-						<h3 class="panel-title">Webcam</h3>
-					</div>
-                    {% if video_type == "mjpeg" %}
-					<img src="{{streamurl}}" class="img-responsive"/>
-                    {% else %}
-                    <video id="video-player" width="640" height="480" class="video-js vjs-default-skin" controls>
-                        <source src="{{streamurl}}" type="application/x-mpegURL">
-                    </video>
 
-                    <script src="https://vjs.zencdn.net/5.8.8/video.js"></script>
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/3.6.12/videojs-contrib-hls.js"></script>
-                    <script>
-                        var player = videojs('video-player');
-                        player.play();
-                    </script>
-                    {% endif %}
-				</div>
 			
 			</div>
 			<div class="col-sm-7 bootcards-cads">
@@ -328,7 +308,28 @@
 					<div class="panel-footer" id="tempforms">
 					</div>
 				</div>
-				
+
+                <!-- CARD: Webcam -->
+				<div class="panel panel-default bootcards-media">
+					<div class="panel-heading">
+						<h3 class="panel-title">Webcam</h3>
+					</div>
+                    {% if video_type == "mjpeg" %}
+					<img src="{{streamurl}}" class="img-responsive"/>
+                    {% else %}
+                    <video id="video-player" width="640" height="480" class="video-js vjs-default-skin" controls>
+                        <source src="{{streamurl}}" type="application/x-mpegURL">
+                    </video>
+
+                    <script src="https://vjs.zencdn.net/5.8.8/video.js"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/3.6.12/videojs-contrib-hls.js"></script>
+                    <script>
+                        var player = videojs('video-player');
+                        player.play();
+                    </script>
+                    {% endif %}
+				</div>
+
 				<!-- CARD: Terminal -->
 				<div class="panel panel-default">
 					<form class="form-horizontal" id="gcode_cmd_form">
