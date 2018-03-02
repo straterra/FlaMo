@@ -135,6 +135,7 @@
 					<img src="{{streamurl}}" class="img-responsive"/>
                     {% else %}
                     <video id="video-player" width="640" height="480" class="video-js vjs-default-skin" controls preload="auto" data-setup='{}'>
+                        <source src="{{streamurl}}" type="application/x-mpegURL">
                     </video>
 
                     <script src="https://unpkg.com/video.js/dist/video.js"></script>
