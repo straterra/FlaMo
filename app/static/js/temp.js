@@ -24,7 +24,7 @@ var temptitles_pretty = {
 	'Flashforge Dreamer': {
 		'T0': 'Right Extruder',
 		'T1': 'Left Extruder',
-		'B': 'Heat Bead'
+		'B': 'Heat Bed'
 	}
 };
 
