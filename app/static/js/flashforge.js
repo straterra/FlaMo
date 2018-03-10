@@ -23,8 +23,8 @@ var flashforge = new function() {
 		upsstatus: null,
 		powerfeed: null,
 		alarmsmoke: null,
-		alarmco: null
-		camstatus: 'Unknown',
+		alarmco: null,
+		camstatus: 'Unknown'
 	};
 	
 	this.parse_data = function(data) {
