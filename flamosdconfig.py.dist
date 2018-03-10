@@ -18,3 +18,7 @@ openhab_password = 'nicetry'
 openhab_power_url = 'https://openhabian/rest/items/zwave_device_e0c84b28_node18_switch_binary'
 openhab_smoke_url = 'https://openhabian/rest/items/nest_smoke_detector_cb6e30b7_X2PELsAZspln4_h5Q2NGXSpJtDOSWRh3_smoke_alarm_state'
 openhab_co_url = 'https://openhabian/rest/items/nest_smoke_detector_cb6e30b7_X2PELsAZspln4_h5Q2NGXSpJtDOSWRh3_co_alarm_state'
+
+# Enable running shell command for camera capture control
+enable_camera_control = 'yes'
+camera_command = "ffmpeg -nostdin -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -f video4linux2 -video_size 1024x768 -input_format mjpeg -i /dev/video0 -c:v libx264 -an -g 1 -shortest -preset ultrafast -tune zerolatency -pix_fmt yuv420p -f flv rtmp://someserver"
