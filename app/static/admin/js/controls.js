@@ -7,6 +7,14 @@ $('#ledcolor').spectrum({
 	}
 });
 
+$('#camonbutton').click(function(){
+	socket.emit('gcodecmd', 'FLAMOSCAMSTART');
+});
+
+$('#camoffbutton').click(function(){
+	socket.emit('gcodecmd', 'FLAMOSCAMSTOP');
+});
+
 $('#poweronbutton').click(function(){
 	socket.emit('gcodecmd', 'FLAMOSPOWERONPROPER');
 });
