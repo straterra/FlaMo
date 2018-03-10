@@ -553,7 +553,7 @@ class CommandProcessor(Thread):
                     if flamosdconfig.enable_camera_control != "yes":
                         StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Disabled by config\nok\n')
                     else:
-                        if self.camera is not None:
+                        if self.camera_process is not None:
                             if self.camera_process.poll() is not None:
                                 StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Process not running\nok\n')
                                 CommandQueue.task_done()
@@ -570,7 +570,7 @@ class CommandProcessor(Thread):
                     if flamosdconfig.enable_camera_control != "yes":
                         StreamQueue.put('< CMD FLAMOSCAMSTATUS ERROR\nCameraControl: Disabled by config\nok\n')
                     else:
-                        if self.camera is not None:
+                        if self.camera_process is not None:
                             if self.camera_process.poll() is not None:
                                 StreamQueue.put('< CMD FLAMOSCAMSTATUS Received\nCameraStatus: Not Running\nok\n')
                                 CommandQueue.task_done()
