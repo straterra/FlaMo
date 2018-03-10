@@ -17,6 +17,7 @@ import flamosdconfig
 import requests
 from requests.auth import HTTPBasicAuth
 import socket
+import subprocess
 
 # Thread definitions
 ## Stream Queue Exporter
@@ -143,6 +144,11 @@ class PeriodicCommandScheduler5000ms(Thread):
                 CommandQueue.put('FLAMOSCOSTATUS')
                 logger.info('[PeriodicCommandScheduler5000ms] Adding Power status code to queue')
                 CommandQueue.put('FLAMOSPOWERSTATUS')
+                if flamosdconfig.enable_camera_control == "yes":
+                    CommandQueue.put('FLAMOSCAMSTATUS\n')
+                    logger.info('[PeriodicCommandScheduler5000ms] Adding camera process status code to queue')
+
+
 
 
             time.sleep(5)
@@ -302,6 +308,7 @@ class CommandProcessor(Thread):
         self.openhab_power_url = flamosdconfig.openhab_power_url
         self.openhab_smoke_url = flamosdconfig.openhab_smoke_url
         self.openhab_co_url = flamosdconfig.openhab_co_url
+        self.camera_process = None
 
 
         if flamosdconfig.enable_nut == "yes":
@@ -519,6 +526,56 @@ class CommandProcessor(Thread):
                     data += "ok\n"
                     StreamQueue.put('< ' + data)
                     CommandQueue.task_done()
+
+                elif command == "FLAMOSCAMSTART\n":
+                    if flamosdconfig.enable_camera_control != "yes":
+                        StreamQueue.put('< CMD FLAMOSCAMSTART ERROR\nCameraControl: Disabled by config\nok\n')
+                        CommandQueue.task_done()
+                    else:
+                        # Verify that we aren't trying to start a duplicate thread
+                        if self.camera_process is not None:
+                            StreamQueue.put('< CMD FLAMOSCAMSTART ERROR\nCameraControl: Existing process running\nok\n')
+                            CommandQueue.task_done()
+                        else:
+                            # Start process
+                            self.camera_process = subprocess.Popen(flamosdconfig.camera_command, shell=True)
+
+                            # Wait 4 seconds for process to start and verify its still running
+                            time.sleep(4)
+                            if self.camera_process.poll() is not None:
+                                StreamQueue.put('< CMD FLAMOSCAMSTART ERROR\nCameraControl: Failed to stay running\nok\n')
+                                CommandQueue.task_done()
+                            else:
+                                StreamQueue.put('< CMD FLAMOSCAMSTART Received\nCameraControl: Process running\nok\n')
+                                CommandQueue.task_done()
+
+                elif command == "FLAMOSCAMSTOP\n":
+                    if flamosdconfig.enable_camera_control != "yes":
+                        StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Disabled by config\nok\n')
+                    else:
+                        if self.camera is not None:
+                            if self.camera_process.poll() is not None:
+                                StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Process not running\nok\n')
+                                CommandQueue.task_done()
+                            else:
+                                self.camera_process.terminate()
+                                self.camera_process = None
+                                StreamQueue.put('< CMD FLAMOSCAMSTOP Received\nCameraControl: Process stopped\nok\n')
+                                CommandQueue.task_done()
+                        else:
+                            StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Process not running\nok\n')
+                            CommandQueue.task_done()
+
+                elif command == "FLAMOSCAMSTATUS\n":
+                    if flamosdconfig.enable_camera_control != "yes":
+                        StreamQueue.put('< CMD FLAMOSCAMSTATUS ERROR\nCameraControl: Disabled by config\nok\n')
+                    else:
+                        if self.camera_process.poll() is not None:
+                            StreamQueue.put('< CMD FLAMOSCAMSTATUS Received\nCameraStatus: Not Running\nok\n')
+                            CommandQueue.task_done()
+                        else:
+                            StreamQueue.put('< CMD FLAMOSCAMSTATUS Received\nCameraStatus: Running\nok\n')
+                            CommandQueue.task_done()
                 else:
                     logger.info('[CommandProcessor] Invalid command: ' + command)
 

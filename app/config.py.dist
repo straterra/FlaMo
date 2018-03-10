@@ -33,3 +33,7 @@ class Config(object):
 
     # Enable OpenHAB support
     enable_openhab = 'yes'
+
+    # Enable running shell command for camera capture control
+    enable_camera_control = 'yes'
+    camera_command = "ffmpeg -nostdin -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -f video4linux2 -video_size 1024x768 -input_format mjpeg -i /dev/video0 -c:v libx264 -an -g 1 -shortest -preset ultrafast -tune zerolatency -pix_fmt yuv420p -f flv rtmp://someserver"

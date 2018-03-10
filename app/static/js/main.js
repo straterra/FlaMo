@@ -1,5 +1,10 @@
 var socket = io.connect();
 
+//refresh camera information
+function refresh_camera_information() {
+	$('#camera_status').text(flashforge.machine.camstatus);
+}
+
 //refresh openhab information - power
 function refresh_openhab_power_information() {
 	$('#machine_power').text(flashforge.machine.powerfeed);
@@ -82,6 +87,9 @@ socket.on('terminal', function(data) {
 			    break;
 			case 'FLAMOSCOSTATUS':
 			    refresh_openhab_co_information();
+			    break;
+			case 'FLAMOSCAMSTATUS':
+			    refresh_camera_information();
 			    break;
 			default: break;
 		}

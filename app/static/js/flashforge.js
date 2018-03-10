@@ -24,17 +24,22 @@ var flashforge = new function() {
 		powerfeed: null,
 		alarmsmoke: null,
 		alarmco: null
+		camstatus: 'Unknown',
 	};
 	
 	this.parse_data = function(data) {
 		var lines = data.match(/^.*(\n+|$)/gm);
 		
-		//Command Recevied must be in frist line
+		//Command Received must be in first line
 		var match = /^CMD (.*) Received\.\n$/.exec(lines[0]);
 		if (match === null) return; //just quit if not a command message.
 		var command = match[1];
 		
 		switch (command) {
+		    // Camera information
+		    case 'FLAMOSCAMSTATUS':
+		        this.machine.camstatus = lines[1].substr(14).trim();
+		        break;
 		    // CO information
 		    case 'FLAMOSCOSTATUS':
 		        this.machine.alarmco = lines[1].substr(10).trim();
