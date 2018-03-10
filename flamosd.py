@@ -546,7 +546,7 @@ class CommandProcessor(Thread):
                                 StreamQueue.put('< CMD FLAMOSCAMSTART ERROR\nCameraControl: Failed to stay running\nok\n')
                                 CommandQueue.task_done()
                             else:
-                                StreamQueue.put('< CMD FLAMOSCAMSTART Received\nCameraControl: Process running\nok\n')
+                                StreamQueue.put('< CMD FLAMOSCAMSTART Received.\nCameraControl: Process running\nok\n')
                                 CommandQueue.task_done()
 
                 elif command == "FLAMOSCAMSTOP\n":
@@ -560,7 +560,7 @@ class CommandProcessor(Thread):
                             else:
                                 self.camera_process.terminate()
                                 self.camera_process = None
-                                StreamQueue.put('< CMD FLAMOSCAMSTOP Received\nCameraControl: Process stopped\nok\n')
+                                StreamQueue.put('< CMD FLAMOSCAMSTOP Received.\nCameraControl: Process stopped\nok\n')
                                 CommandQueue.task_done()
                         else:
                             StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Process not running\nok\n')
@@ -572,13 +572,13 @@ class CommandProcessor(Thread):
                     else:
                         if self.camera_process is not None:
                             if self.camera_process.poll() is not None:
-                                StreamQueue.put('< CMD FLAMOSCAMSTATUS Received\nCameraStatus: Not Running\nok\n')
+                                StreamQueue.put('< CMD FLAMOSCAMSTATUS Received.\nCameraStatus: Not Running\nok\n')
                                 CommandQueue.task_done()
                             else:
-                                StreamQueue.put('< CMD FLAMOSCAMSTATUS Received\nCameraStatus: Running\nok\n')
+                                StreamQueue.put('< CMD FLAMOSCAMSTATUS Received.\nCameraStatus: Running\nok\n')
                                 CommandQueue.task_done()
                         else:
-                            StreamQueue.put('< CMD FLAMOSCAMSTATUS Received\nCameraStatus: Not Running\nok\n')
+                            StreamQueue.put('< CMD FLAMOSCAMSTATUS Received.\nCameraStatus: Not Running\nok\n')
                             CommandQueue.task_done()
                 else:
                     logger.info('[CommandProcessor] Invalid command: ' + command)
