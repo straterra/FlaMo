@@ -558,7 +558,7 @@ class CommandProcessor(Thread):
                                 StreamQueue.put('< CMD FLAMOSCAMSTOP ERROR\nCameraControl: Process not running\nok\n')
                                 CommandQueue.task_done()
                             else:
-                                self.camera_process.terminate()
+                                self.camera_process.kill()
                                 self.camera_process = None
                                 StreamQueue.put('< CMD FLAMOSCAMSTOP Received.\nCameraControl: Process stopped\nok\n')
                                 CommandQueue.task_done()
