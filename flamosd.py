@@ -538,7 +538,7 @@ class CommandProcessor(Thread):
                             CommandQueue.task_done()
                         else:
                             # Start process
-                            self.camera_process = subprocess.Popen(flamosdconfig.camera_command, shell=True)
+                            self.camera_process = subprocess.Popen(flamosdconfig.camera_command, shell=False)
 
                             # Wait 4 seconds for process to start and verify its still running
                             time.sleep(4)
